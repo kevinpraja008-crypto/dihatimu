@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import logoDihatimu from '../assets/logo-dihatimu.png'
-import logoDprd from '../assets/logo-dprd.png'
+import logoSekretariat from "../assets/logo-sekretariat-dprd.png";
 
 const SPLASH_DURATION_MS = 1800
 
@@ -35,11 +35,11 @@ export default function Splash() {
             className="flex items-center justify-center gap-4 rounded-[24px] border border-[rgba(212,175,55,0.25)] bg-[rgba(255,255,255,0.08)] px-5 py-3 shadow-[0_0_32px_rgba(45,155,106,0.2)] backdrop-blur-sm"
           >
             <div className="flex h-[88px] w-[120px] shrink-0 items-center justify-center">
-              <img
-                src={logoDprd}
-                alt="DPRD"
-                className="h-[82px] w-full object-contain opacity-100 drop-shadow-[0_2px_5px_rgba(0,0,0,0.22)]"
-              />
+            <img
+  src={logoSekretariat}
+  alt="Sekretariat DPRD"
+  className="h-[82px] w-full object-contain opacity-100 drop-shadow-[0_2px_5px_rgba(0,0,0,0.22)]"
+/>
             </div>
             <div
               className="h-[88px] w-px shrink-0 bg-gradient-to-b from-transparent via-[#d4af37] to-transparent"

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import AdminLayout from '../components/AdminLayout'
 import { useMasterData } from '../context/MasterDataContext'
 import logoDihatimu from '../assets/logo-dihatimu.png'
-import logoDprd from '../assets/logo-dprd.png'
+import logoSekretariat from "../assets/logo-sekretariat-dprd.png";
 import {
   exportBackup,
   getSettings,
@@ -69,7 +69,7 @@ export default function Pengaturan() {
           description="Logo dan nama instansi resmi"
         >
           <div className="mb-5 flex items-center gap-5 rounded-xl border border-[rgba(1,50,32,0.08)] bg-[#F5F7F9] p-5">
-            <img src={logoDprd} alt="DPRD" className="h-16 w-auto object-contain" />
+            <img src={logoSekretariat} alt="Sekretariat DPRD" className="h-16 w-auto object-contain" />
             <div className="h-12 w-px bg-[rgba(1,50,32,0.12)]" />
             <img src={logoDihatimu} alt="DIHATIMU" className="h-20 w-auto object-contain" />
           </div>
@@ -82,7 +82,7 @@ export default function Pengaturan() {
             />
           </label>
           <p className="mt-3 text-xs text-muted">
-            Logo DPRD dan DIHATIMU menggunakan asset resmi sistem.
+            Logo Sekretariat DPRD dan DIHATIMU menggunakan asset resmi sistem.
           </p>
         </SectionCard>
 

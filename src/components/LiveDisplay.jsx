@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import gedungDprd from '../assets/gedung-dprd-lineart.png'
+import gedungDprd from "../assets/logo-gedung-line-art.png";
 
 const easePremium = [0.22, 1, 0.36, 1]
 

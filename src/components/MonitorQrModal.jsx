@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import QRCode from 'qrcode'
-import gedungDprd from '../assets/gedung-dprd-lineart.png'
-import logoDprd from '../assets/logo-dprd.png'
+import gedungDprd from '../assets/logo-gedung-line-art.png'
+import logoSekretariat from "../assets/logo-sekretariat-dprd.png";
 import { computeGroupStats, formatTanggalKegiatan } from '../data/dummy'
 import { buildMonitorUrl } from '../data/qrService'
 

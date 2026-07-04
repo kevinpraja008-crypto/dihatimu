@@ -1,7 +1,7 @@
 import QRCode from 'qrcode'
-import logoDprd from '../assets/logo-dprd.png'
+import logoSekretariat from "../assets/logo-sekretariat-dprd.png";
 import logoDihatimu from '../assets/logo-dihatimu.png'
-import gedungDprd from '../assets/gedung-dprd-lineart.png'
+import gedungDprd from '../assets/logo-gedung-line-art.png'
 
 const CARD_WIDTH = 420
 const CARD_HEIGHT = 680

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import logoDihatimu from '../assets/logo-dihatimu.png'
-import logoDprd from '../assets/logo-dprd.png'
+import logoSekretariat from "../assets/logo-sekretariat-dprd.png";
 import { computeGroupStats } from '../data/dummy'
 import { findGroupById, subscribe } from '../data/masterStore'
 

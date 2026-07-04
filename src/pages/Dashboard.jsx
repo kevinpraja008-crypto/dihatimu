@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import AdminLayout from '../components/AdminLayout'
-import gedungDashboard from '../assets/gedung-dprd-dashboard.png'
+import gedungDashboard from '../assets/logo-gedung-dashboard.png'
 import { useMasterData } from '../context/MasterDataContext'
 import {
   computeDashboardStats,

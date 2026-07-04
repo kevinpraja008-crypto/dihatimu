@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import logoDihatimu from '../assets/logo-dihatimu.png'
-import logoDprd from '../assets/logo-dprd.png'
+import logoSekretariat from "../assets/logo-sekretariat-dprd.png";
 import LiveDisplay, { LiveStandby } from '../components/LiveDisplay'
 import { computeGroupStats, getLatestCheckIn } from '../data/dummy'
 import { getMasterGroups, subscribe } from '../data/masterStore'
@@ -93,11 +93,11 @@ export default function LiveMonitor() {
       <header className="relative z-10 shrink-0 border-b border-[#d4af37]/15 bg-[#013220]/80 px-5 py-2.5 backdrop-blur-sm sm:px-8">
         <div className="flex items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-            <img
-              src={logoDprd}
-              alt="DPRD"
-              className="h-9 w-auto shrink-0 object-contain sm:h-10"
-            />
+          <img
+            src={logoSekretariat}
+            alt="Sekretariat DPRD"
+            className="h-9 w-auto shrink-0 object-contain sm:h-10"
+          />
             <div className="h-8 w-px shrink-0 bg-gradient-to-b from-transparent via-[#d4af37]/60 to-transparent" />
             <img
               src={logoDihatimu}

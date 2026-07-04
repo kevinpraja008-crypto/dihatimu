@@ -1,15 +1,15 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import logoDihatimu from '../assets/logo-dihatimu.png'
-import logoDprd from '../assets/logo-dprd.png'
-import gedungDprd from '../assets/gedung-dprd-lineart.png'
+import logoSekretariat from "../assets/logo-sekretariat-dprd.png";
+import gedungDprd from '../assets/logo-gedung-line-art.png'
 
 const fadeUp = {
   initial: { opacity: 0, y: 16 },
   animate: { opacity: 1, y: 0 },
 }
 
-const logoDprdClass =
+const logoSekretariatClass =
   'object-contain opacity-100 contrast-[1.08] drop-shadow-[0_2px_5px_rgba(1,50,32,0.1)]'
 
 const logoDihatimuClass =
@@ -34,9 +34,9 @@ export default function Landing() {
               className="mb-5 inline-flex w-auto items-center justify-center gap-2.5 rounded-[18px] border border-[rgba(212,175,55,0.35)] bg-white/60 px-3 py-2.5 shadow-[0_4px_14px_rgba(1,50,32,0.07)] backdrop-blur-sm"
             >
               <img
-                src={logoDprd}
-                alt="DPRD"
-                className={`h-[66px] w-auto max-w-[122px] ${logoDprdClass}`}
+                src={logoSekretariat}
+                alt="Sekretariat DPRD"
+                className={`h-[66px] w-auto max-w-[122px] ${logoSekretariatClass}`}
               />
               <div
                 className="h-[54px] w-px shrink-0 bg-gradient-to-b from-transparent via-[#c9a227]/90 to-transparent"

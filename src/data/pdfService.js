@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf'
-import logoDprd from '../assets/logo-dprd.png'
+import logoSekretariat from "../assets/logo-sekretariat-dprd.png";
 import logoDihatimu from '../assets/logo-dihatimu.png'
 import { computeGroupStats, formatTanggalKegiatan } from './dummy'
 
@@ -43,8 +43,8 @@ function drawStatBox(doc, x, y, w, h, label, value) {
 
 export async function downloadGroupPdf(group) {
   const stats = computeGroupStats(group)
-  const [dprdB64, dihatimuB64] = await Promise.all([
-    loadImage(logoDprd),
+  const [sekretariatB64, dihatimuB64] = await Promise.all([
+    loadImage(logoSekretariat),
     loadImage(logoDihatimu),
   ])
 
@@ -54,7 +54,7 @@ export async function downloadGroupPdf(group) {
   const margin = 14
   let y = 16
 
-  doc.addImage(dprdB64, 'PNG', margin, y - 4, 24, 24)
+  doc.addImage(sekretariatB64, 'PNG', margin, y - 4, 24, 24)
   doc.addImage(dihatimuB64, 'PNG', pageW - margin - 30, y - 6, 30, 30)
 
   doc.setFont('helvetica', 'bold')

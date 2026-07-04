@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom'
-import logoDprd from '../assets/logo-dprd.png'
+import logoSekretariat from "../assets/logo-sekretariat-dprd.png";
 
 const NAV_ITEMS = [
   { label: 'Dashboard', path: '/dashboard', icon: 'home' },
@@ -43,11 +43,11 @@ export default function AdminLayout({ children }) {
 
         <div className="relative px-5 pt-7 pb-6 text-center">
           <div className="mx-auto grid h-24 w-24 place-items-center rounded-full bg-white/5 ring-1 ring-white/10 shadow-[0_14px_34px_rgba(0,0,0,0.18)]">
-            <img
-              src={logoDprd}
-              alt="Logo DPRD"
-              className="h-20 w-auto object-contain drop-shadow-xl"
-            />
+          <img
+            src={logoSekretariat}
+            alt="Sekretariat DPRD"
+            className="h-20 w-auto object-contain drop-shadow-xl"
+          />
           </div>
 
           <div className="mt-5">
