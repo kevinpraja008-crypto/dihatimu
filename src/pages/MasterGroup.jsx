@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import AdminLayout from '../components/AdminLayout'
 import CreateGroupModal from '../components/CreateGroupModal'
@@ -12,6 +13,8 @@ import {
 const ITEMS_PER_PAGE = 8
 
 export default function MasterGroup() {
+  const navigate = useNavigate()
+
   const { masterGroups, addMasterGroup } = useMasterData()
 
   const [search, setSearch] = useState('')
@@ -468,13 +471,14 @@ export default function MasterGroup() {
   </div>
 </div>
   
-        <button
-          type="button"
-          className={`mt-auto flex h-12 w-full items-center justify-between rounded-2xl px-5 text-sm font-bold transition ${
-            isSelesai
-              ? 'border border-emerald-800/30 bg-white text-[#013220] hover:bg-slate-100'
-              : 'bg-white text-[#013220] shadow-lg shadow-black/10 hover:bg-emerald-50'
-          }`}
+<button
+  type="button"
+  onClick={() => navigate(`/group/${group.id}`)}
+  className={`mt-auto flex h-12 w-full items-center justify-between rounded-2xl px-5 text-sm font-bold transition ${
+    isSelesai
+      ? 'border border-emerald-800/30 bg-white text-[#013220] hover:bg-slate-100'
+      : 'bg-white text-[#013220] shadow-lg shadow-black/10 hover:bg-emerald-50'
+  }`}
         >
           <span className="flex-1 text-center">Kelola Group</span>
           <span className="text-xl">›</span>

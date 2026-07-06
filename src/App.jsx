@@ -6,6 +6,7 @@ import Scanner from './pages/Scanner'
 import Review from './pages/Review'
 import Dashboard from './pages/Dashboard'
 import MasterGroup from './pages/MasterGroup'
+import GroupDetail from './pages/GroupDetail'
 import GroupMonitor from './pages/GroupMonitor'
 import LiveMonitor from './pages/LiveMonitor'
 import Laporan from './pages/Laporan'
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/review" element={<Review />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/master-group" element={<MasterGroup />} />
+          <Route path="/group/:groupId" element={<GroupDetail />} />
           <Route path="/monitor/group/:groupId" element={<GroupMonitor />} />
           <Route path="/live" element={<LiveMonitor />} />
           <Route path="/laporan" element={<Laporan />} />

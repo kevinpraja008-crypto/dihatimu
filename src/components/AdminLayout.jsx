@@ -73,7 +73,9 @@ export default function AdminLayout({ children }) {
           {NAV_ITEMS.map((item) => {
             const isActive =
             location.pathname === item.path ||
-            (item.path === '/master-group' && location.pathname.startsWith('/master-group')) ||
+            (item.path === '/master-group' &&
+              (location.pathname.startsWith('/master-group') ||
+                location.pathname.startsWith('/group/'))) ||
             (item.path === '/laporan' && location.pathname.startsWith('/laporan'))
 
             return (
