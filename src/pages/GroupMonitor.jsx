@@ -49,7 +49,11 @@ export default function GroupMonitor() {
       <header className="border-b border-[#e8eaed] bg-white px-4 py-6 sm:px-6">
         <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
           <div className="mb-4 flex items-center justify-center gap-4">
-            <img src={logoDprd} alt="DPRD" className="h-12 w-auto object-contain" />
+          <img
+  src={logoSekretariat}
+  alt="Sekretariat DPRD"
+  className="h-12 w-auto object-contain"
+/>
             <div className="h-10 w-px bg-gradient-to-b from-transparent via-[#c9a227] to-transparent" />
             <img src={logoDihatimu} alt="DIHATIMU" className="h-14 w-auto object-contain" />
           </div>
