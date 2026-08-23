@@ -102,8 +102,8 @@ export async function generatePremiumQrCard({ participant, group }) {
   ctx.lineWidth = 1
   ctx.strokeRect(18, 18, CARD_WIDTH - 36, CARD_HEIGHT - 36)
 
-  const [imgDprd, imgDihatimu, imgGedung] = await Promise.all([
-    loadImage(logoDprd),
+  const [imgSekretariat, imgDihatimu, imgGedung] = await Promise.all([
+    loadImage(logoSekretariat),
     loadImage(logoDihatimu),
     loadImage(gedungDprd),
   ])
@@ -115,7 +115,7 @@ export async function generatePremiumQrCard({ participant, group }) {
   ctx.drawImage(imgGedung, (CARD_WIDTH - gw) / 2, 180, gw, gh)
   ctx.restore()
 
-  drawContainedImage(ctx, imgDprd, 28, 28, 68, 52)
+  drawContainedImage(ctx, imgSekretariat, 28, 28, 68, 52)
   drawContainedImage(ctx, imgDihatimu, CARD_WIDTH - 96, 24, 76, 56)
 
   ctx.textAlign = 'center'

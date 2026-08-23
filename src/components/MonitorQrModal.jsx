@@ -75,7 +75,7 @@ export default function MonitorQrModal({ group, onClose }) {
 
         <div className="relative bg-[#F5F7F9] px-6 py-6">
           <div className="mb-4 flex items-center justify-center gap-3">
-            <img src={logoDprd} alt="DPRD" className="h-10 w-auto object-contain opacity-80" />
+            <img src={logoSekretariat} alt="DPRD" className="h-10 w-auto object-contain opacity-80" />
             <div className="h-8 w-px bg-[rgba(1,50,32,0.12)]" />
             <p className="text-xs font-bold uppercase tracking-wide text-[#013220]">Monitor Kehadiran</p>
           </div>

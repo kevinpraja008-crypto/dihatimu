@@ -3,12 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import AdminLayout from '../components/AdminLayout'
 import CreateGroupModal from '../components/CreateGroupModal'
+import MasterGroupCard from '../components/master-group/MasterGroupCard'
 import { useMasterData } from '../context/MasterDataContext'
-import {
-  computeGroupStats,
-  formatTanggalKegiatan,
-  getActiveGroups,
-} from '../data/dummy'
+import { computeGroupStats } from '../data/dummy'
 
 const ITEMS_PER_PAGE = 8
 
@@ -306,187 +303,15 @@ export default function MasterGroup() {
           ) : (
             <>
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-              {currentGroups.map((group, index) => {
-  const stats = computeGroupStats(group)
-  const status = getGroupStatus(group)
-  const isSelesai = status === 'SELESAI'
-
-  const cardClass = isSelesai
-  ? 'relative min-h-[325px] overflow-hidden rounded-[32px] border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-slate-200 p-5 text-slate-900 shadow-2xl shadow-slate-300/40'
-  : 'relative min-h-[325px] overflow-hidden rounded-[32px] bg-gradient-to-br from-[#013220] via-[#06452d] to-[#0B2E26] p-5 text-white shadow-2xl shadow-[#013220]/30'
-
-  return (
-    <motion.article
-      key={group.id}
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.03 }}
-      className={cardClass}
-    >
-      <div className="pointer-events-none absolute inset-0">
-        <div
-          className={`absolute right-5 top-[92px] ${
-            isSelesai ? 'text-emerald-900/18' : 'text-white/22'
-          }`}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-[90px] w-[90px]"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-          >
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4Zm-6.5 8c0-3.03 4.33-5 6.5-5s6.5 1.97 6.5 5v1h-13v-1ZM5.5 11.5A2.5 2.5 0 1 0 5.5 6a2.5 2.5 0 0 0 0 5.5Zm13 0A2.5 2.5 0 1 0 18.5 6a2.5 2.5 0 0 0 0 5.5ZM3 20v-1c0-1.55 1.6-2.79 3.44-3.45A6.62 6.62 0 0 0 4.8 20H3Zm18 0h-1.8a6.62 6.62 0 0 0-1.64-4.45C19.4 16.21 21 17.45 21 19v1Z" />
-          </svg>
-        </div>
-  
-        <div
-          className={`absolute -right-16 -bottom-16 h-44 w-44 rounded-full blur-3xl ${
-            isSelesai ? 'bg-slate-300/30' : 'bg-emerald-300/10'
-          }`}
-        />
-      </div>
-  
-      <div className="relative z-10 flex h-full flex-col">
-        <div className="mb-7 flex items-center justify-between">
-          <span
-            className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase ${
-              isSelesai
-                ? 'bg-slate-100 text-slate-700'
-                : 'bg-emerald-500/15 text-emerald-100'
-            }`}
-          >
-            <span
-              className={`h-2.5 w-2.5 rounded-full ${
-                isSelesai
-                  ? 'bg-slate-500'
-                  : 'bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.9)]'
-              }`}
-            />
-            {status}
-          </span>
-  
-          <div className="flex items-center gap-3">
-            <span
-              className={`font-mono text-[11px] font-bold tracking-[0.12em] ${
-                isSelesai ? 'text-slate-600' : 'text-white'
-              }`}
-            >
-              {group.groupId}
-            </span>
-  
-            <button
-              type="button"
-              className={`text-xl leading-none ${
-                isSelesai ? 'text-slate-700' : 'text-white'
-              }`}
-            >
-              ⋮
-            </button>
-          </div>
-        </div>
-  
-        <div className="min-h-[74px] pr-[96px]">
-          <h3
-            className={`text-[18px] font-extrabold leading-tight tracking-tight ${
-              isSelesai ? 'text-slate-900' : 'text-white'
-            }`}
-          >
-            {group.name}
-          </h3>
-        </div>
-  
-        <p
-          className={`mt-1 flex items-center gap-2 text-[13px] font-semibold ${
-            isSelesai ? 'text-slate-600' : 'text-white/85'
-          }`}
-        >
-          <span>📅</span>
-          <span>
-            {group.tanggalKegiatan
-              ? formatTanggalKegiatan(group.tanggalKegiatan)
-              : 'Tanggal belum diatur'}
-          </span>
-        </p>
-  
-        <div className={`my-4 border-t ${isSelesai ? 'border-slate-200' : 'border-white/15'}`} />
-  
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-  <div className="flex items-center gap-3">
-    <div
-      className={`flex h-9 w-9 items-center justify-center rounded-xl ${
-        isSelesai ? 'bg-slate-100 text-slate-700' : 'bg-white/10 text-white'
-      }`}
-    >
-      <svg
-        className="h-6 w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={2.5}
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m8-4a4 4 0 11-8 0 4 4 0 018 0z"
-        />
-      </svg>
-    </div>
-
-    <div>
-      <p
-        className={`text-[26px] font-black leading-none ${
-          isSelesai ? 'text-slate-900' : 'text-white'
-        }`}
-      >
-        {stats.total}
-      </p>
-      <p
-        className={`mt-1 text-[11px] font-semibold ${
-          isSelesai ? 'text-slate-600' : 'text-white/85'
-        }`}
-      >
-        Peserta
-      </p>
-    </div>
-  </div>
-
-  <div className={`h-12 w-px ${isSelesai ? 'bg-slate-200' : 'bg-white/25'}`} />
-
-  <div>
-    <p
-      className={`text-[11px] leading-tight ${
-        isSelesai ? 'text-slate-500' : 'text-white/70'
-      }`}
-    >
-      Terakhir diperbarui
-    </p>
-
-    <p
-      className={`mt-1 text-[13px] font-black ${
-        isSelesai ? 'text-slate-900' : 'text-white'
-      }`}
-    >
-      10:25 WIB
-    </p>
-  </div>
-</div>
-  
-<button
-  type="button"
-  onClick={() => navigate(`/group/${group.id}`)}
-  className={`mt-auto flex h-12 w-full items-center justify-between rounded-2xl px-5 text-sm font-bold transition ${
-    isSelesai
-      ? 'border border-emerald-800/30 bg-white text-[#013220] hover:bg-slate-100'
-      : 'bg-white text-[#013220] shadow-lg shadow-black/10 hover:bg-emerald-50'
-  }`}
-        >
-          <span className="flex-1 text-center">Kelola Group</span>
-          <span className="text-xl">›</span>
-        </button>
-      </div>
-    </motion.article>
-  )
-                })}
+                {currentGroups.map((group, index) => (
+                  <MasterGroupCard
+                    key={group.id}
+                    group={group}
+                    index={index}
+                    status={getGroupStatus(group)}
+                    onManage={(id) => navigate(`/group/${id}`)}
+                  />
+                ))}
               </div>
 
               <div className="mt-6 flex items-center justify-center gap-2">
