@@ -151,12 +151,22 @@ export async function addMasterGroup(group) {
 
   if (error) {
     console.error('[DIHATIMU] Gagal tambah group:', error)
-    alert('Gagal menyimpan group ke Supabase.')
-    return
+
+    return {
+      ok: false,
+      error,
+    }
   }
 
-  masterGroups = [dbGroupToApp(data, []), ...masterGroups]
+  const savedGroup = dbGroupToApp(data, [])
+
+  masterGroups = [savedGroup, ...masterGroups]
   notify()
+
+  return {
+    ok: true,
+    group: savedGroup,
+  }
 }
 
 export async function updateGroup(groupId, updates) {
