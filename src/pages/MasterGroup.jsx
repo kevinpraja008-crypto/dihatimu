@@ -74,7 +74,7 @@ export default function MasterGroup() {
       title="Master Group"
       subtitle="Kelola group kegiatan dan peserta dengan mudah dan terorganisir"
     >
-      <div className="mx-auto max-w-7xl space-y-6">
+      <div className="mx-auto max-w-[1640px] space-y-6">
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -287,10 +287,10 @@ export default function MasterGroup() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-5 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-[#0B2E26]">Daftar Group</h2>
-              <p className="text-sm text-muted">
+              <p className="mt-0.5 text-sm text-muted">
                 Menampilkan {currentGroups.length} dari {filteredGroups.length} group
               </p>
             </div>
@@ -302,7 +302,7 @@ export default function MasterGroup() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
                 {currentGroups.map((group, index) => (
                   <MasterGroupCard
                     key={group.id}

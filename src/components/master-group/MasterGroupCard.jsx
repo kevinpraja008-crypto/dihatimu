@@ -1,13 +1,214 @@
 import { motion } from 'framer-motion'
-import { computeGroupStats, formatTanggalKegiatan } from '../../data/dummy'
+import {
+  computeGroupStats,
+  formatTanggalKegiatan,
+} from '../../data/dummy'
 
-export default function MasterGroupCard({ group, index, status, onManage }) {
+function IconCalendar({ className }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.75}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M8 7V3m8 4V3M4 11h16M6 5h12a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z"
+      />
+    </svg>
+  )
+}
+
+function IconUser({ className }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.85}
+    >
+      <circle cx="12" cy="6.75" r="3.75" />
+
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4 21v-1.25C4 15.47 7.58 12 12 12s8 3.47 8 7.75V21H4z"
+      />
+    </svg>
+  )
+}
+
+function IconCheckCircle({ className }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.85}
+    >
+      <circle cx="12" cy="12" r="9" />
+
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M8.5 12l2.5 2.5 4.75-5"
+      />
+    </svg>
+  )
+}
+
+function IconXCircle({ className }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.85}
+    >
+      <circle cx="12" cy="12" r="9" />
+
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9 9l6 6m0-6l-6 6"
+      />
+    </svg>
+  )
+}
+
+function IconChevronRight({ className }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9 5l7 7-7 7"
+      />
+    </svg>
+  )
+}
+
+function IconKebab({ className }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      fill="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <circle cx="12" cy="5" r="1.75" />
+      <circle cx="12" cy="12" r="1.75" />
+      <circle cx="12" cy="19" r="1.75" />
+    </svg>
+  )
+}
+
+function WatermarkGroup({ className }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      fill="none"
+      viewBox="0 0 96 72"
+      stroke="currentColor"
+      strokeWidth={2.2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Kepala utama */}
+      <circle cx="48" cy="16" r="10" />
+
+      {/* Kepala kiri dan kanan */}
+      <circle cx="20" cy="24" r="7" />
+      <circle cx="76" cy="24" r="7" />
+
+      {/* Badan utama */}
+      <path d="M24 63v-4c0-12.7 10.7-23 24-23s24 10.3 24 23v4" />
+      <path d="M24 63h48" />
+
+      {/* Badan kiri */}
+      <path d="M23 43h-3C10.6 43 3 50.6 3 60v3h14" />
+
+      {/* Badan kanan */}
+      <path d="M73 43h3c9.4 0 17 7.6 17 17v3H79" />
+    </svg>
+  )
+}
+
+function StatColumn({
+  icon: Icon,
+  value,
+  label,
+  tone,
+  showDivider,
+}) {
+  const isActive = tone === 'active'
+
+  return (
+    <div className="flex min-h-[70px] flex-1 items-start justify-center px-1">
+      <div
+        className={`flex h-[58px] w-full flex-col items-center ${
+          showDivider
+            ? isActive
+              ? 'border-l border-white/25'
+              : 'border-l border-slate-200'
+            : ''
+        }`}
+      >
+        <div
+          className={`flex h-[31px] items-center justify-center gap-[11px] ${
+            isActive ? 'text-white' : 'text-[#0B2E26]'
+          }`}
+        >
+          <Icon className="h-[23px] w-[23px] shrink-0" />
+
+          <span className="min-w-[1ch] text-[25px] font-medium leading-none tracking-[-0.02em] tabular-nums">
+            {value}
+          </span>
+        </div>
+
+        <p
+          className={`mt-2 text-[14px] font-normal leading-none ${
+            isActive ? 'text-white' : 'text-slate-500'
+          }`}
+        >
+          {label}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+export default function MasterGroupCard({
+  group,
+  index,
+  status,
+  onManage,
+}) {
   const stats = computeGroupStats(group)
   const isSelesai = status === 'SELESAI'
+  const tone = isSelesai ? 'done' : 'active'
 
   const cardClass = isSelesai
-    ? 'relative flex min-h-[336px] flex-col overflow-hidden rounded-[24px] border border-[rgba(1,50,32,0.08)] bg-gradient-to-br from-white via-[#f8faf9] to-[#eef2f0] p-5 text-[#0B2E26] shadow-[0_8px_24px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(1,50,32,0.1)]'
-    : 'relative flex min-h-[336px] flex-col overflow-hidden rounded-[24px] bg-gradient-to-br from-[#013220] via-[#014D2F] to-[#016241] p-5 text-white shadow-[0_12px_40px_rgba(1,50,32,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_48px_rgba(1,50,32,0.34)]'
+    ? 'relative flex h-[406px] flex-col overflow-hidden rounded-[27px] border border-slate-200/90 bg-gradient-to-br from-white via-[#f8faf9] to-[#f1f4f3] p-[23px] text-[#0B2E26] shadow-[0_8px_28px_rgba(15,23,42,0.07)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_36px_rgba(15,23,42,0.1)]'
+    : 'relative flex h-[406px] flex-col overflow-hidden rounded-[27px] bg-gradient-to-br from-[#02503B] via-[#04694B] to-[#02503B] p-[23px] text-white shadow-[0_10px_36px_rgba(2,80,59,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_44px_rgba(2,80,59,0.34)]'
 
   return (
     <motion.article
@@ -16,52 +217,52 @@ export default function MasterGroupCard({ group, index, status, onManage }) {
       transition={{ delay: index * 0.03 }}
       className={cardClass}
     >
-      <div className="pointer-events-none absolute inset-0">
+      {!isSelesai && (
         <div
-          className={`absolute right-4 top-[84px] ${
-            isSelesai ? 'text-[#013220]/[0.14]' : 'text-white/[0.18]'
-          }`}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-[80px] w-[80px]"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-          >
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4Zm-6.5 8c0-3.03 4.33-5 6.5-5s6.5 1.97 6.5 5v1h-13v-1ZM5.5 11.5A2.5 2.5 0 1 0 5.5 6a2.5 2.5 0 0 0 0 5.5Zm13 0A2.5 2.5 0 1 0 18.5 6a2.5 2.5 0 0 0 0 5.5ZM3 20v-1c0-1.55 1.6-2.79 3.44-3.45A6.62 6.62 0 0 0 4.8 20H3Zm18 0h-1.8a6.62 6.62 0 0 0-1.64-4.45C19.4 16.21 21 17.45 21 19v1Z" />
-          </svg>
-        </div>
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-[72px] rounded-t-[27px] bg-gradient-to-b from-white/[0.08] to-transparent"
+        />
+      )}
 
-        <div
-          className={`absolute -right-16 -bottom-16 h-44 w-44 rounded-full blur-3xl ${
-            isSelesai ? 'bg-slate-300/30' : 'bg-emerald-300/10'
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+      >
+        <WatermarkGroup
+          className={`absolute right-[22px] top-[128px] h-[84px] w-[100px] ${
+            isSelesai
+              ? 'text-[#013220]/[0.15]'
+              : 'text-white/[0.28]'
           }`}
         />
       </div>
 
       <div className="relative z-10 flex h-full flex-col">
-        <div className="mb-5 flex items-center justify-between">
+        <div className="mb-6 flex shrink-0 items-center justify-between gap-3">
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] ${
+            className={`inline-flex h-[34px] min-w-[94px] items-center justify-center gap-[9px] rounded-full px-4 text-[11px] font-bold uppercase tracking-[0.06em] ${
               isSelesai
-                ? 'border-slate-200 bg-slate-100 text-slate-600'
-                : 'border-emerald-400/25 bg-emerald-400/12 text-emerald-200'
+                ? 'border border-slate-200 bg-slate-100 text-slate-600'
+                : 'border border-emerald-300/25 bg-emerald-400/20 text-white'
             }`}
           >
             <span
-              className={`h-1.5 w-1.5 rounded-full ${
+              className={`h-2 w-2 shrink-0 rounded-full ${
                 isSelesai
                   ? 'bg-slate-500'
-                  : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.85)]'
+                  : 'bg-emerald-300 shadow-[0_0_8px_rgba(110,231,183,0.95)]'
               }`}
             />
+
             {status}
           </span>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <span
-              className={`font-mono text-[10px] font-semibold tracking-[0.14em] ${
-                isSelesai ? 'text-slate-500' : 'text-white/50'
+              className={`font-mono text-[13px] font-semibold tracking-[0.06em] ${
+                isSelesai
+                  ? 'text-slate-500'
+                  : 'text-white'
               }`}
             >
               {group.groupId}
@@ -69,21 +270,24 @@ export default function MasterGroupCard({ group, index, status, onManage }) {
 
             <button
               type="button"
-              className={`flex h-7 w-7 items-center justify-center rounded-md text-[17px] leading-none transition-colors ${
+              aria-label={`Menu aksi ${group.name}`}
+              className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
                 isSelesai
                   ? 'text-slate-500 hover:bg-slate-200/60'
-                  : 'text-white/65 hover:bg-white/10 hover:text-white'
+                  : 'text-white/80 hover:bg-white/10 hover:text-white'
               }`}
             >
-              ⋮
+              <IconKebab className="h-[18px] w-[18px]" />
             </button>
           </div>
         </div>
 
-        <div className="min-h-[68px] pr-[84px]">
+        <div className="min-h-[95px] max-w-[205px] shrink-0">
           <h3
-            className={`text-[16px] font-bold leading-[1.35] tracking-[-0.01em] ${
-              isSelesai ? 'text-[#0B2E26]' : 'text-white'
+            className={`text-[23px] font-bold leading-[1.22] tracking-[-0.01em] ${
+              isSelesai
+                ? 'text-[#0B2E26]'
+                : 'text-white'
             }`}
           >
             {group.name}
@@ -91,11 +295,14 @@ export default function MasterGroupCard({ group, index, status, onManage }) {
         </div>
 
         <p
-          className={`mt-2.5 flex items-center gap-1.5 text-[12px] font-medium ${
-            isSelesai ? 'text-slate-500' : 'text-white/75'
+          className={`mt-1 flex h-6 shrink-0 items-center gap-2.5 text-[15px] font-medium ${
+            isSelesai
+              ? 'text-slate-500'
+              : 'text-white'
           }`}
         >
-          <span className="text-[13px] leading-none">📅</span>
+          <IconCalendar className="h-[18px] w-[18px] shrink-0" />
+
           <span>
             {group.tanggalKegiatan
               ? formatTanggalKegiatan(group.tanggalKegiatan)
@@ -103,95 +310,57 @@ export default function MasterGroupCard({ group, index, status, onManage }) {
           </span>
         </p>
 
-        <div className={`my-3.5 border-t ${isSelesai ? 'border-slate-200/80' : 'border-white/10'}`} />
+        <div
+          className={`mt-7 shrink-0 border-t ${
+            isSelesai
+              ? 'border-slate-200/90'
+              : 'border-white/20'
+          }`}
+        />
 
-        <div className="grid grid-cols-3 items-end gap-1">
-          <div className="flex items-center gap-2.5">
-            <div
-              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] ${
-                isSelesai ? 'bg-[#013220]/[0.06] text-[#013220]' : 'bg-white/10 text-white'
-              }`}
-            >
-              <svg
-                className="h-[18px] w-[18px]"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2.5}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m8-4a4 4 0 11-8 0 4 4 0 018 0z"
-                />
-              </svg>
-            </div>
+        <div className="mt-5 flex min-h-[70px] shrink-0 items-start">
+          <StatColumn
+            icon={IconUser}
+            value={stats.total}
+            label="Peserta"
+            tone={tone}
+            showDivider={false}
+          />
 
-            <div>
-              <p
-                className={`text-[22px] font-black leading-none tabular-nums ${
-                  isSelesai ? 'text-[#0B2E26]' : 'text-white'
-                }`}
-              >
-                {stats.total}
-              </p>
-              <p
-                className={`mt-0.5 text-[10px] font-semibold tracking-[0.04em] ${
-                  isSelesai ? 'text-slate-500' : 'text-white/75'
-                }`}
-              >
-                Peserta
-              </p>
-            </div>
-          </div>
+          <StatColumn
+            icon={IconCheckCircle}
+            value={stats.hadir}
+            label="Hadir"
+            tone={tone}
+            showDivider
+          />
 
-          <div className="text-center">
-            <p
-              className={`text-[22px] font-black leading-none tabular-nums ${
-                isSelesai ? 'text-emerald-700' : 'text-emerald-300'
-              }`}
-            >
-              {stats.hadir}
-            </p>
-            <p
-              className={`mt-0.5 text-[10px] font-semibold tracking-[0.04em] ${
-                isSelesai ? 'text-slate-500' : 'text-white/75'
-              }`}
-            >
-              Hadir
-            </p>
-          </div>
-
-          <div className="text-center">
-            <p
-              className={`text-[22px] font-black leading-none tabular-nums ${
-                isSelesai ? 'text-[#b8941f]' : 'text-[#e8c84a]'
-              }`}
-            >
-              {stats.belum}
-            </p>
-            <p
-              className={`mt-0.5 text-[10px] font-semibold tracking-[0.04em] ${
-                isSelesai ? 'text-slate-500' : 'text-white/75'
-              }`}
-            >
-              Belum
-            </p>
-          </div>
+          <StatColumn
+            icon={IconXCircle}
+            value={stats.belum}
+            label="Belum"
+            tone={tone}
+            showDivider
+          />
         </div>
 
-        <button
-          type="button"
-          onClick={() => onManage(group.id)}
-          className={`mt-auto flex h-11 w-full items-center justify-between rounded-xl px-4 text-[13px] font-bold tracking-[0.01em] transition-all duration-200 ${
-            isSelesai
-              ? 'border border-[rgba(1,50,32,0.12)] bg-white text-[#013220] shadow-[0_4px_14px_rgba(15,23,42,0.06)] hover:bg-[#f8faf9]'
-              : 'bg-white text-[#013220] shadow-[0_4px_14px_rgba(0,0,0,0.1)] hover:bg-emerald-50/95'
-          }`}
-        >
-          <span className="flex-1 text-center">Kelola Group</span>
-          <span className="-mr-0.5 text-[18px] font-normal leading-none">›</span>
-        </button>
+        <div className="mt-auto pt-1">
+          <button
+            type="button"
+            onClick={() => onManage(group.id)}
+            className={`flex h-[56px] w-full items-center rounded-[18px] px-5 transition-all duration-200 ${
+              isSelesai
+                ? 'border border-[rgba(1,50,32,0.12)] bg-white text-[#06251E] shadow-[0_4px_14px_rgba(15,23,42,0.06)] hover:bg-[#f8faf9]'
+                : 'bg-white text-[#06251E] shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:bg-[#f7faf9]'
+            }`}
+          >
+            <span className="flex-1 text-center text-[16px] font-semibold tracking-[0.01em]">
+              Kelola Group
+            </span>
+
+            <IconChevronRight className="h-[22px] w-[22px] shrink-0 text-[#06251E]" />
+          </button>
+        </div>
       </div>
     </motion.article>
   )
