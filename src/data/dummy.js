@@ -181,9 +181,25 @@ export function todayIsoDate() {
   return new Date().toISOString().split('T')[0]
 }
 
-export function createMasterGroup({ instansi, level, wilayah, groupSequence, tanggalKegiatan }) {
-  const name = buildGroupName({ instansi, level, wilayah })
-  const code = buildGroupCode({ instansi, level, wilayah })
+export function createMasterGroup({
+  instansi,
+  level,
+  wilayah,
+  unitKunjungan,
+  groupSequence,
+  tanggalKegiatan,
+}) {
+  const name = buildGroupName({
+    instansi,
+    level,
+    wilayah,
+  })
+
+  const code = buildGroupCode({
+    instansi,
+    level,
+    wilayah,
+  })
 
   return {
     id: `mg-${Date.now()}`,
@@ -192,6 +208,9 @@ export function createMasterGroup({ instansi, level, wilayah, groupSequence, tan
     instansi,
     level,
     wilayah,
+    unitKunjungan: String(unitKunjungan || '')
+      .trim()
+      .toUpperCase(),
     code,
     status: 'active',
     tanggalKegiatan: tanggalKegiatan || todayIsoDate(),

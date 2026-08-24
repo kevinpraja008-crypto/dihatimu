@@ -14,6 +14,7 @@ function normalizeGroup(group) {
   return {
     status: 'active',
     tanggalKegiatan: new Date().toISOString().split('T')[0],
+    unitKunjungan: '',
     catatan: '',
     participants: [],
     ...group,
@@ -27,8 +28,9 @@ function dbGroupToApp(row, participants = []) {
     name: row.name,
     instansi: row.instansi,
     level: row.level,
-    wilayah: row.wilayah,
-    code: row.code,
+wilayah: row.wilayah,
+unitKunjungan: row.unit_kunjungan || '',
+code: row.code,
     status: row.status,
     tanggalKegiatan: row.tanggal_kegiatan,
     catatan: row.catatan || '',
@@ -57,8 +59,9 @@ function groupToDb(group) {
     name: group.name,
     instansi: group.instansi,
     level: group.level,
-    wilayah: group.wilayah,
-    code: group.code,
+wilayah: group.wilayah,
+unit_kunjungan: group.unitKunjungan || null,
+code: group.code,
     status: group.status || 'active',
     tanggal_kegiatan: group.tanggalKegiatan,
     catatan: group.catatan || '',
@@ -175,8 +178,13 @@ export async function updateGroup(groupId, updates) {
   if (updates.name !== undefined) payload.name = updates.name
   if (updates.instansi !== undefined) payload.instansi = updates.instansi
   if (updates.level !== undefined) payload.level = updates.level
-  if (updates.wilayah !== undefined) payload.wilayah = updates.wilayah
-  if (updates.code !== undefined) payload.code = updates.code
+if (updates.wilayah !== undefined) payload.wilayah = updates.wilayah
+
+if (updates.unitKunjungan !== undefined) {
+  payload.unit_kunjungan = updates.unitKunjungan || null
+}
+
+if (updates.code !== undefined) payload.code = updates.code
   if (updates.status !== undefined) payload.status = updates.status
   if (updates.tanggalKegiatan !== undefined) payload.tanggal_kegiatan = updates.tanggalKegiatan
   if (updates.catatan !== undefined) payload.catatan = updates.catatan

@@ -11,11 +11,13 @@ import {
   todayIsoDate,
   wilayahOptions,
 } from '../data/dummy'
+import { getUnitLabel, getUnitOptions } from '../data/unitKunjungan'
 
 const INITIAL_FORM = {
   instansi: '',
   level: '',
   wilayah: '',
+  unitKunjungan: '',
   tanggalKegiatan: todayIsoDate(),
 }
 
@@ -139,6 +141,21 @@ export default function CreateGroupModal({
     return wilayahOptions[form.level.toLowerCase()] || []
   }, [form.level])
 
+  const unitOptions = useMemo(
+    () => getUnitOptions(form.instansi),
+    [form.instansi],
+  )
+
+  const unitFieldLabel =
+    form.instansi === 'DPRD'
+      ? 'AKD / Unit Kunjungan'
+      : 'Bagian / Unit Kerja'
+
+  const previewUnitLabel = useMemo(
+    () => getUnitLabel(form.instansi, form.unitKunjungan),
+    [form.instansi, form.unitKunjungan],
+  )
+
   const previewName = useMemo(() => {
     if (!form.instansi || !form.level || !form.wilayah.trim()) {
       return 'Nama group akan dibuat otomatis'
@@ -184,6 +201,16 @@ export default function CreateGroupModal({
     }))
   }
 
+  function handleInstansiChange(value) {
+    setError('')
+
+    setForm((current) => ({
+      ...current,
+      instansi: value,
+      unitKunjungan: '',
+    }))
+  }
+
   function validateForm() {
     if (!form.instansi) {
       return 'Pilih unsur atau instansi terlebih dahulu.'
@@ -197,11 +224,18 @@ export default function CreateGroupModal({
       return 'Isi nama wilayah terlebih dahulu.'
     }
 
+    if (!form.unitKunjungan) {
+      return form.instansi === 'DPRD'
+        ? 'Pilih AKD atau unit kunjungan terlebih dahulu.'
+        : 'Pilih bagian atau unit kerja terlebih dahulu.'
+    }
+
     if (!form.tanggalKegiatan) {
       return 'Pilih tanggal kegiatan terlebih dahulu.'
     }
 
     const normalizedName = previewName.trim().toUpperCase()
+    const normalizedUnit = form.unitKunjungan.trim().toUpperCase()
 
     const duplicate = masterGroups.some((group) => {
       const sameName =
@@ -211,11 +245,15 @@ export default function CreateGroupModal({
       const sameDate =
         group.tanggalKegiatan === form.tanggalKegiatan
 
-      return sameName && sameDate
+      const sameUnit =
+        String(group.unitKunjungan || '').trim().toUpperCase() ===
+        normalizedUnit
+
+      return sameName && sameDate && sameUnit
     })
 
     if (duplicate) {
-      return 'Group dengan nama dan tanggal kegiatan yang sama sudah tersedia.'
+      return 'Group dengan wilayah, tanggal, dan AKD/Bagian yang sama sudah tersedia.'
     }
 
     return ''
@@ -241,6 +279,7 @@ export default function CreateGroupModal({
         instansi: form.instansi,
         level: form.level,
         wilayah: form.wilayah.trim(),
+        unitKunjungan: form.unitKunjungan,
         groupSequence: nextSequence,
         tanggalKegiatan: form.tanggalKegiatan,
       })
@@ -315,7 +354,7 @@ export default function CreateGroupModal({
               </h2>
 
               <p className="mt-2 max-w-md text-sm leading-relaxed text-white/70">
-                Tentukan unsur kunjungan, wilayah, dan tanggal kegiatan.
+                Tentukan unsur kunjungan, AKD atau bagian, wilayah, dan tanggal kegiatan.
               </p>
             </div>
 
@@ -343,7 +382,7 @@ export default function CreateGroupModal({
                   value={form.instansi}
                   disabled={saving}
                   onChange={(event) =>
-                    updateField('instansi', event.target.value)
+                    handleInstansiChange(event.target.value)
                   }
                   className="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-[#0B2E26] outline-none transition focus:border-[#04694B] focus:ring-4 focus:ring-[#04694B]/10 disabled:cursor-not-allowed disabled:bg-slate-100"
                 >
@@ -442,6 +481,39 @@ export default function CreateGroupModal({
               </label>
             </div>
 
+            {form.instansi && (
+              <motion.label
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="block"
+              >
+                <FieldLabel required>
+                  {unitFieldLabel}
+                </FieldLabel>
+
+                <select
+                  value={form.unitKunjungan}
+                  disabled={saving}
+                  onChange={(event) =>
+                    updateField('unitKunjungan', event.target.value)
+                  }
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-[#0B2E26] outline-none transition focus:border-[#04694B] focus:ring-4 focus:ring-[#04694B]/10 disabled:cursor-not-allowed disabled:bg-slate-100"
+                >
+                  <option value="">
+                    {form.instansi === 'DPRD'
+                      ? 'Pilih AKD / unit kunjungan'
+                      : 'Pilih bagian / unit kerja'}
+                  </option>
+
+                  {unitOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </motion.label>
+            )}
+
             <div className="overflow-hidden rounded-2xl border border-[#013220]/10 bg-[#F5F8F6]">
               <div className="flex items-center gap-3 border-b border-[#013220]/10 px-5 py-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#013220]/10 text-[#013220]">
@@ -464,6 +536,12 @@ export default function CreateGroupModal({
                   <p className="break-words text-lg font-bold leading-snug text-[#0B2E26]">
                     {previewName}
                   </p>
+
+                  {previewUnitLabel && (
+                    <span className="mt-2 inline-flex rounded-full border border-[#013220]/10 bg-[#013220]/5 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.06em] text-[#013220]">
+                      {previewUnitLabel}
+                    </span>
+                  )}
 
                   <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
                     <span className="font-mono font-bold text-[#013220]">
