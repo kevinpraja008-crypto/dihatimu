@@ -3,6 +3,7 @@ import {
   computeGroupStats,
   formatTanggalKegiatan,
 } from '../../data/dummy'
+import { getUnitShortLabel } from '../../data/unitKunjungan'
 
 function IconCalendar({ className }) {
   return (
@@ -164,18 +165,16 @@ function StatColumn({
   return (
     <div className="flex min-h-[70px] flex-1 items-start justify-center px-1">
       <div
-        className={`flex h-[58px] w-full flex-col items-center ${
-          showDivider
+        className={`flex h-[58px] w-full flex-col items-center ${showDivider
             ? isActive
               ? 'border-l border-white/25'
               : 'border-l border-slate-200'
             : ''
-        }`}
+          }`}
       >
         <div
-          className={`flex h-[31px] items-center justify-center gap-[11px] ${
-            isActive ? 'text-white' : 'text-[#0B2E26]'
-          }`}
+          className={`flex h-[31px] items-center justify-center gap-[11px] ${isActive ? 'text-white' : 'text-[#0B2E26]'
+            }`}
         >
           <Icon className="h-[23px] w-[23px] shrink-0" />
 
@@ -185,9 +184,8 @@ function StatColumn({
         </div>
 
         <p
-          className={`mt-2 text-[14px] font-normal leading-none ${
-            isActive ? 'text-white' : 'text-slate-500'
-          }`}
+          className={`mt-2 text-[14px] font-normal leading-none ${isActive ? 'text-white' : 'text-slate-500'
+            }`}
         >
           {label}
         </p>
@@ -205,6 +203,11 @@ export default function MasterGroupCard({
   const stats = computeGroupStats(group)
   const isSelesai = status === 'SELESAI'
   const tone = isSelesai ? 'done' : 'active'
+
+  const unitLabel = getUnitShortLabel(
+    group.instansi,
+    group.unitKunjungan,
+  )
 
   const cardClass = isSelesai
     ? 'relative flex h-[406px] flex-col overflow-hidden rounded-[27px] border border-slate-200/90 bg-gradient-to-br from-white via-[#f8faf9] to-[#f1f4f3] p-[23px] text-[#0B2E26] shadow-[0_8px_28px_rgba(15,23,42,0.07)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_36px_rgba(15,23,42,0.1)]'
@@ -229,77 +232,84 @@ export default function MasterGroupCard({
         className="pointer-events-none absolute inset-0 overflow-hidden"
       >
         <WatermarkGroup
-          className={`absolute right-[22px] top-[128px] h-[84px] w-[100px] ${
-            isSelesai
+          className={`absolute right-[22px] top-[128px] h-[84px] w-[100px] ${isSelesai
               ? 'text-[#013220]/[0.15]'
               : 'text-white/[0.28]'
-          }`}
+            }`}
         />
       </div>
 
       <div className="relative z-10 flex h-full flex-col">
-        <div className="mb-6 flex shrink-0 items-center justify-between gap-3">
+      <div className="mb-3 flex h-[34px] shrink-0 items-center gap-1.5">
           <span
-            className={`inline-flex h-[34px] min-w-[94px] items-center justify-center gap-[9px] rounded-full px-4 text-[11px] font-bold uppercase tracking-[0.06em] ${
-              isSelesai
-                ? 'border border-slate-200 bg-slate-100 text-slate-600'
-                : 'border border-emerald-300/25 bg-emerald-400/20 text-white'
-            }`}
+            className={`inline-flex h-[34px] w-[78px] shrink-0 items-center justify-center gap-2 rounded-full border text-[10px] font-bold uppercase tracking-[0.05em] ${isSelesai
+                ? 'border-slate-200 bg-slate-100 text-slate-600'
+                : 'border-white/25 bg-white/[0.07] text-white'
+              }`}
           >
             <span
-              className={`h-2 w-2 shrink-0 rounded-full ${
-                isSelesai
+              className={`h-2 w-2 shrink-0 rounded-full ${isSelesai
                   ? 'bg-slate-500'
                   : 'bg-emerald-300 shadow-[0_0_8px_rgba(110,231,183,0.95)]'
-              }`}
+                }`}
             />
 
             {status}
           </span>
 
-          <div className="flex items-center gap-2">
+          {unitLabel ? (
             <span
-              className={`font-mono text-[13px] font-semibold tracking-[0.06em] ${
-                isSelesai
-                  ? 'text-slate-500'
-                  : 'text-white'
-              }`}
+              title={group.unitKunjungan}
+              className={`flex h-[34px] min-w-0 flex-1 items-center justify-center overflow-hidden rounded-full border px-1.5 text-[10px] font-bold uppercase tracking-[0.05em] ${isSelesai
+                  ? 'border-slate-200 bg-white/80 text-slate-600'
+                  : 'border-white/25 bg-white/[0.07] text-white'
+                }`}
             >
-              {group.groupId}
+              <span className="block min-w-0 truncate">
+                {unitLabel}
+              </span>
             </span>
+          ) : (
+            <span aria-hidden className="min-w-0 flex-1" />
+          )}
 
-            <button
-              type="button"
-              aria-label={`Menu aksi ${group.name}`}
-              className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
-                isSelesai
-                  ? 'text-slate-500 hover:bg-slate-200/60'
-                  : 'text-white/80 hover:bg-white/10 hover:text-white'
+          <span
+            className={`inline-flex h-[34px] w-[84px] shrink-0 items-center justify-center rounded-full border px-2 font-mono text-[10px] font-bold uppercase tracking-[0.05em] ${isSelesai
+                ? 'border-slate-200 bg-white/80 text-slate-600'
+                : 'border-white/25 bg-white/[0.07] text-white'
               }`}
-            >
-              <IconKebab className="h-[18px] w-[18px]" />
-            </button>
-          </div>
+          >
+            {group.groupId}
+          </span>
+
+          <button
+            type="button"
+            aria-label={`Menu ${group.name}`}
+            className={`flex h-[34px] w-[18px] shrink-0 items-center justify-center transition-colors ${isSelesai
+                ? 'text-slate-500 hover:text-slate-700'
+                : 'text-white/80 hover:text-white'
+              }`}
+          >
+            <IconKebab className="h-[18px] w-[18px]" />
+          </button>
         </div>
 
         <div className="min-h-[95px] max-w-[205px] shrink-0">
           <h3
-            className={`text-[23px] font-bold leading-[1.22] tracking-[-0.01em] ${
-              isSelesai
+            className={`text-[23px] font-bold leading-[1.22] tracking-[-0.01em] ${isSelesai
                 ? 'text-[#0B2E26]'
                 : 'text-white'
-            }`}
+              }`}
           >
             {group.name}
           </h3>
         </div>
 
         <p
-          className={`mt-1 flex h-6 shrink-0 items-center gap-2.5 text-[15px] font-medium ${
-            isSelesai
+          className={`mt-1 flex h-6 shrink-0 items-center gap-2.5 text-[15px] font-medium ${isSelesai
               ? 'text-slate-500'
               : 'text-white'
-          }`}
+            }`}
         >
           <IconCalendar className="h-[18px] w-[18px] shrink-0" />
 
@@ -311,11 +321,10 @@ export default function MasterGroupCard({
         </p>
 
         <div
-          className={`mt-7 shrink-0 border-t ${
-            isSelesai
+          className={`mt-7 shrink-0 border-t ${isSelesai
               ? 'border-slate-200/90'
               : 'border-white/20'
-          }`}
+            }`}
         />
 
         <div className="mt-5 flex min-h-[70px] shrink-0 items-start">
@@ -348,11 +357,10 @@ export default function MasterGroupCard({
           <button
             type="button"
             onClick={() => onManage(group.id)}
-            className={`flex h-[56px] w-full items-center rounded-[18px] px-5 transition-all duration-200 ${
-              isSelesai
+            className={`flex h-[56px] w-full items-center rounded-[18px] px-5 transition-all duration-200 ${isSelesai
                 ? 'border border-[rgba(1,50,32,0.12)] bg-white text-[#06251E] shadow-[0_4px_14px_rgba(15,23,42,0.06)] hover:bg-[#f8faf9]'
                 : 'bg-white text-[#06251E] shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:bg-[#f7faf9]'
-            }`}
+              }`}
           >
             <span className="flex-1 text-center text-[16px] font-semibold tracking-[0.01em]">
               Kelola Group
