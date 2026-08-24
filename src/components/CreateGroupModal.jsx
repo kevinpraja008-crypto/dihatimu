@@ -9,7 +9,6 @@ import {
   instansiOptions,
   levelWilayahOptions,
   todayIsoDate,
-  wilayahOptions,
 } from '../data/dummy'
 import { getUnitLabel, getUnitOptions } from '../data/unitKunjungan'
 
@@ -78,6 +77,25 @@ function IconCalendar({ className }) {
   )
 }
 
+function IconChevronDown({ className }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 20 20"
+      fill="none"
+      className={className}
+    >
+      <path
+        d="M6 8l4 4 4-4"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 function IconGroup({ className }) {
   return (
     <svg
@@ -135,11 +153,6 @@ export default function CreateGroupModal({
     [nextSequence],
   )
 
-  const wilayahSuggestions = useMemo(() => {
-    if (!form.level) return []
-
-    return wilayahOptions[form.level.toLowerCase()] || []
-  }, [form.level])
 
   const unitOptions = useMemo(
     () => getUnitOptions(form.instansi),
@@ -289,7 +302,7 @@ export default function CreateGroupModal({
       if (!result?.ok) {
         setError(
           result?.error?.message ||
-            'Group gagal disimpan ke Supabase. Silakan coba kembali.',
+          'Group gagal disimpan ke Supabase. Silakan coba kembali.',
         )
         return
       }
@@ -378,26 +391,28 @@ export default function CreateGroupModal({
                   Unsur/Instansi
                 </FieldLabel>
 
-                <select
-                  value={form.instansi}
-                  disabled={saving}
-                  onChange={(event) =>
-                    handleInstansiChange(event.target.value)
-                  }
-                  className="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-[#0B2E26] outline-none transition focus:border-[#04694B] focus:ring-4 focus:ring-[#04694B]/10 disabled:cursor-not-allowed disabled:bg-slate-100"
-                >
-                  <option value="">
-                    Pilih unsur/instansi
-                  </option>
+                <div className="relative">
+                  <select
+                    value={form.instansi}
+                    disabled={saving}
+                    onChange={(event) =>
+                      handleInstansiChange(event.target.value)
+                    }
+                    className="h-12 w-full appearance-none rounded-xl border border-slate-200 bg-white pl-4 pr-12 text-sm font-medium text-[#0B2E26] outline-none transition focus:border-[#04694B] focus:ring-4 focus:ring-[#04694B]/10 disabled:cursor-not-allowed disabled:bg-slate-100"
+                  >
+                    <option value="">Pilih unsur/instansi</option>
 
-                  {instansiOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option === 'SEKRETARIAT'
-                        ? 'Sekretariat DPRD'
-                        : option}
-                    </option>
-                  ))}
-                </select>
+                    {instansiOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option === 'SEKRETARIAT'
+                          ? 'Sekretariat DPRD'
+                          : option}
+                      </option>
+                    ))}
+                  </select>
+
+                  <IconChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0B2E26]" />
+                </div>
               </label>
 
               <label className="block">
@@ -405,25 +420,26 @@ export default function CreateGroupModal({
                   Tingkat Wilayah
                 </FieldLabel>
 
-                <select
-                  value={form.level}
-                  disabled={saving}
-                  onChange={(event) =>
-                    handleLevelChange(event.target.value)
-                  }
-                  className="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-[#0B2E26] outline-none transition focus:border-[#04694B] focus:ring-4 focus:ring-[#04694B]/10 disabled:cursor-not-allowed disabled:bg-slate-100"
-                >
-                  <option value="">
-                    Pilih tingkat wilayah
-                  </option>
+                <div className="relative">
+                  <select
+                    value={form.level}
+                    disabled={saving}
+                    onChange={(event) =>
+                      handleLevelChange(event.target.value)
+                    }
+                    className="h-12 w-full appearance-none rounded-xl border border-slate-200 bg-white pl-4 pr-12 text-sm font-medium text-[#0B2E26] outline-none transition focus:border-[#04694B] focus:ring-4 focus:ring-[#04694B]/10 disabled:cursor-not-allowed disabled:bg-slate-100"
+                  >
+                    <option value="">Pilih tingkat wilayah</option>
 
-                  {levelWilayahOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option.charAt(0) +
-                        option.slice(1).toLowerCase()}
-                    </option>
-                  ))}
-                </select>
+                    {levelWilayahOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option.charAt(0) + option.slice(1).toLowerCase()}
+                      </option>
+                    ))}
+                  </select>
+
+                  <IconChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0B2E26]" />
+                </div>
               </label>
             </div>
 
@@ -431,16 +447,16 @@ export default function CreateGroupModal({
               <label className="block">
                 <FieldLabel required>
                   {form.level
-                    ? `Nama ${
-                        form.level.charAt(0) +
-                        form.level.slice(1).toLowerCase()
-                      }`
+                    ? `Nama ${form.level.charAt(0) +
+                    form.level.slice(1).toLowerCase()
+                    }`
                     : 'Nama Wilayah'}
                 </FieldLabel>
 
                 <input
                   type="text"
-                  list="dihatimu-wilayah-options"
+                  autoComplete="off"
+                  spellCheck={false}
                   value={form.wilayah}
                   disabled={saving || !form.level}
                   onChange={(event) =>
@@ -453,12 +469,6 @@ export default function CreateGroupModal({
                   }
                   className="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-[#0B2E26] placeholder:text-slate-400 outline-none transition focus:border-[#04694B] focus:ring-4 focus:ring-[#04694B]/10 disabled:cursor-not-allowed disabled:bg-slate-100"
                 />
-
-                <datalist id="dihatimu-wilayah-options">
-                  {wilayahSuggestions.map((wilayah) => (
-                    <option key={wilayah} value={wilayah} />
-                  ))}
-                </datalist>
               </label>
 
               <label className="block">
@@ -491,26 +501,30 @@ export default function CreateGroupModal({
                   {unitFieldLabel}
                 </FieldLabel>
 
-                <select
-                  value={form.unitKunjungan}
-                  disabled={saving}
-                  onChange={(event) =>
-                    updateField('unitKunjungan', event.target.value)
-                  }
-                  className="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-[#0B2E26] outline-none transition focus:border-[#04694B] focus:ring-4 focus:ring-[#04694B]/10 disabled:cursor-not-allowed disabled:bg-slate-100"
-                >
-                  <option value="">
-                    {form.instansi === 'DPRD'
-                      ? 'Pilih AKD / unit kunjungan'
-                      : 'Pilih bagian / unit kerja'}
-                  </option>
-
-                  {unitOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
+                <div className="relative">
+                  <select
+                    value={form.unitKunjungan}
+                    disabled={saving}
+                    onChange={(event) =>
+                      updateField('unitKunjungan', event.target.value)
+                    }
+                    className="h-12 w-full appearance-none rounded-xl border border-slate-200 bg-white pl-4 pr-12 text-sm font-medium text-[#0B2E26] outline-none transition focus:border-[#04694B] focus:ring-4 focus:ring-[#04694B]/10 disabled:cursor-not-allowed disabled:bg-slate-100"
+                  >
+                    <option value="">
+                      {form.instansi === 'DPRD'
+                        ? 'Pilih AKD / unit kunjungan'
+                        : 'Pilih bagian / unit kerja'}
                     </option>
-                  ))}
-                </select>
+
+                    {unitOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+
+                  <IconChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0B2E26]" />
+                </div>
               </motion.label>
             )}
 
@@ -553,8 +567,8 @@ export default function CreateGroupModal({
 
                       {form.tanggalKegiatan
                         ? formatTanggalKegiatan(
-                            form.tanggalKegiatan,
-                          )
+                          form.tanggalKegiatan,
+                        )
                         : 'Tanggal belum dipilih'}
                     </span>
                   </div>
