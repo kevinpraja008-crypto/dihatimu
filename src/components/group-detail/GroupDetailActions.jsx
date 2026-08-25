@@ -1,42 +1,39 @@
 import { motion } from 'framer-motion'
 
+function IconPlus({ className }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 5v14M5 12h14"
+      />
+    </svg>
+  )
+}
+
 export default function GroupDetailActions() {
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 12 }}
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.15 }}
-      className="admin-card p-5"
+      transition={{ delay: 0.2, duration: 0.3 }}
+      className="flex items-center"
     >
-      <div className="flex flex-wrap gap-3">
-        <button
-          type="button"
-          className="admin-btn-primary"
-        >
-          + Tambah Peserta
-        </button>
-
-        <button
-          type="button"
-          className="admin-btn-secondary"
-        >
-          QR Monitor
-        </button>
-
-        <button
-          type="button"
-          className="admin-btn-secondary"
-        >
-          Download Semua QR
-        </button>
-
-        <button
-          type="button"
-          className="admin-btn-secondary"
-        >
-          Edit Group
-        </button>
-      </div>
-    </motion.section>
+      <button
+        type="button"
+        className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-[#04613F] to-[#013220] px-6 text-sm font-bold text-white shadow-[0_6px_18px_rgba(1,50,32,0.22)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_22px_rgba(1,50,32,0.28)] active:translate-y-0"
+      >
+        <IconPlus className="h-[18px] w-[18px]" />
+        Tambah Peserta
+      </button>
+    </motion.div>
   )
 }
