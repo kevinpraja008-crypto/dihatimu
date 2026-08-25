@@ -175,35 +175,78 @@ export async function addMasterGroup(group) {
 export async function updateGroup(groupId, updates) {
   const payload = {}
 
-  if (updates.name !== undefined) payload.name = updates.name
-  if (updates.instansi !== undefined) payload.instansi = updates.instansi
-  if (updates.level !== undefined) payload.level = updates.level
-if (updates.wilayah !== undefined) payload.wilayah = updates.wilayah
+  if (updates.name !== undefined) {
+    payload.name = updates.name
+  }
 
-if (updates.unitKunjungan !== undefined) {
-  payload.unit_kunjungan = updates.unitKunjungan || null
-}
+  if (updates.instansi !== undefined) {
+    payload.instansi = updates.instansi
+  }
 
-if (updates.code !== undefined) payload.code = updates.code
-  if (updates.status !== undefined) payload.status = updates.status
-  if (updates.tanggalKegiatan !== undefined) payload.tanggal_kegiatan = updates.tanggalKegiatan
-  if (updates.catatan !== undefined) payload.catatan = updates.catatan
+  if (updates.level !== undefined) {
+    payload.level = updates.level
+  }
 
-  const { error } = await supabase
+  if (updates.wilayah !== undefined) {
+    payload.wilayah = updates.wilayah
+  }
+
+  if (updates.unitKunjungan !== undefined) {
+    payload.unit_kunjungan = updates.unitKunjungan || null
+  }
+
+  if (updates.code !== undefined) {
+    payload.code = updates.code
+  }
+
+  if (updates.status !== undefined) {
+    payload.status = updates.status
+  }
+
+  if (updates.tanggalKegiatan !== undefined) {
+    payload.tanggal_kegiatan = updates.tanggalKegiatan
+  }
+
+  if (updates.catatan !== undefined) {
+    payload.catatan = updates.catatan
+  }
+
+  const { data, error } = await supabase
     .from('master_groups')
     .update(payload)
     .eq('id', groupId)
+    .select('*')
+    .single()
 
   if (error) {
     console.error('[DIHATIMU] Gagal update group:', error)
-    alert('Gagal update group.')
-    return
+    alert('Gagal memperbarui group.')
+
+    return {
+      ok: false,
+      error,
+    }
   }
 
-  masterGroups = masterGroups.map((g) =>
-    g.id === groupId ? normalizeGroup({ ...g, ...updates }) : g,
+  const currentGroup = masterGroups.find(
+    (group) => group.id === groupId,
   )
+
+  const updatedGroup = dbGroupToApp(
+    data,
+    currentGroup?.participants || [],
+  )
+
+  masterGroups = masterGroups.map((group) =>
+    group.id === groupId ? updatedGroup : group,
+  )
+
   notify()
+
+  return {
+    ok: true,
+    group: updatedGroup,
+  }
 }
 
 export function archiveGroup(groupId) {

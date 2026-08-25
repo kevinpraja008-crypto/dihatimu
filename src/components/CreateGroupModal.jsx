@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
+  buildGroupCode,
   buildGroupName,
   createMasterGroup,
   formatTanggalKegiatan,
@@ -18,6 +19,19 @@ const INITIAL_FORM = {
   wilayah: '',
   unitKunjungan: '',
   tanggalKegiatan: todayIsoDate(),
+}
+
+function getInitialForm(editingGroup) {
+  if (!editingGroup) return { ...INITIAL_FORM }
+
+  return {
+    instansi: editingGroup.instansi || '',
+    level: editingGroup.level || '',
+    wilayah: editingGroup.wilayah || '',
+    unitKunjungan: editingGroup.unitKunjungan || '',
+    tanggalKegiatan:
+      editingGroup.tanggalKegiatan || todayIsoDate(),
+  }
 }
 
 function IconClose({ className }) {
@@ -136,10 +150,16 @@ function FieldLabel({ children, required }) {
 export default function CreateGroupModal({
   masterGroups = [],
   addMasterGroup,
+  editingGroup = null,
+  updateGroup,
   onClose,
   onCreated,
+  onUpdated,
 }) {
-  const [form, setForm] = useState(INITIAL_FORM)
+  const isEditing = Boolean(editingGroup?.id)
+  const [form, setForm] = useState(() =>
+    getInitialForm(editingGroup),
+  )
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -149,8 +169,11 @@ export default function CreateGroupModal({
   )
 
   const previewGroupId = useMemo(
-    () => generateGroupId(nextSequence),
-    [nextSequence],
+    () =>
+      isEditing
+        ? editingGroup.groupId
+        : generateGroupId(nextSequence),
+    [editingGroup, isEditing, nextSequence],
   )
 
 
@@ -180,6 +203,11 @@ export default function CreateGroupModal({
       wilayah: form.wilayah.trim(),
     })
   }, [form.instansi, form.level, form.wilayah])
+
+  useEffect(() => {
+    setForm(getInitialForm(editingGroup))
+    setError('')
+  }, [editingGroup])
 
   useEffect(() => {
     function handleEscape(event) {
@@ -251,6 +279,10 @@ export default function CreateGroupModal({
     const normalizedUnit = form.unitKunjungan.trim().toUpperCase()
 
     const duplicate = masterGroups.some((group) => {
+      if (isEditing && group.id === editingGroup.id) {
+        return false
+      }
+
       const sameName =
         String(group.name || '').trim().toUpperCase() ===
         normalizedName
@@ -288,38 +320,68 @@ export default function CreateGroupModal({
     setError('')
 
     try {
-      const newGroup = createMasterGroup({
-        instansi: form.instansi,
-        level: form.level,
-        wilayah: form.wilayah.trim(),
-        unitKunjungan: form.unitKunjungan,
-        groupSequence: nextSequence,
-        tanggalKegiatan: form.tanggalKegiatan,
-      })
+      let result
 
-      const result = await addMasterGroup(newGroup)
+      if (isEditing) {
+        if (typeof updateGroup !== 'function') {
+          throw new Error('Fungsi updateGroup belum tersedia.')
+        }
+
+        const identity = {
+          instansi: form.instansi,
+          level: form.level,
+          wilayah: form.wilayah.trim(),
+        }
+
+        result = await updateGroup(editingGroup.id, {
+          ...identity,
+          name: buildGroupName(identity),
+          code: buildGroupCode(identity),
+          unitKunjungan: form.unitKunjungan,
+          tanggalKegiatan: form.tanggalKegiatan,
+        })
+      } else {
+        const newGroup = createMasterGroup({
+          instansi: form.instansi,
+          level: form.level,
+          wilayah: form.wilayah.trim(),
+          unitKunjungan: form.unitKunjungan,
+          groupSequence: nextSequence,
+          tanggalKegiatan: form.tanggalKegiatan,
+        })
+
+        result = await addMasterGroup(newGroup)
+      }
 
       if (!result?.ok) {
         setError(
           result?.error?.message ||
-          'Group gagal disimpan ke Supabase. Silakan coba kembali.',
+          `Group gagal ${
+            isEditing ? 'diperbarui' : 'disimpan'
+          } di Supabase. Silakan coba kembali.`,
         )
         return
       }
 
-      if (onCreated) {
+      if (isEditing && onUpdated) {
+        onUpdated(result.group)
+      } else if (!isEditing && onCreated) {
         onCreated(result.group)
       } else {
         onClose()
       }
     } catch (submitError) {
       console.error(
-        '[DIHATIMU] Gagal membuat group:',
+        `[DIHATIMU] Gagal ${
+          isEditing ? 'memperbarui' : 'membuat'
+        } group:`,
         submitError,
       )
 
       setError(
-        'Terjadi kesalahan ketika menyimpan group. Periksa koneksi internet.',
+        `Terjadi kesalahan ketika ${
+          isEditing ? 'memperbarui' : 'menyimpan'
+        } group. Periksa koneksi internet.`,
       )
     } finally {
       setSaving(false)
@@ -363,11 +425,13 @@ export default function CreateGroupModal({
               </p>
 
               <h2 className="mt-2 text-2xl font-bold tracking-tight">
-                Buat Group Baru
+                {isEditing ? 'Edit Group' : 'Buat Group Baru'}
               </h2>
 
               <p className="mt-2 max-w-md text-sm leading-relaxed text-white/70">
-                Tentukan unsur kunjungan, AKD atau bagian, wilayah, dan tanggal kegiatan.
+                {isEditing
+                  ? 'Perbarui identitas group tanpa mengubah peserta, QR, dan data kehadiran.'
+                  : 'Tentukan unsur kunjungan, AKD atau bagian, wilayah, dan tanggal kegiatan.'}
               </p>
             </div>
 
@@ -536,11 +600,15 @@ export default function CreateGroupModal({
 
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#013220]">
-                    Preview Group
+                    {isEditing
+                      ? 'Preview Perubahan'
+                      : 'Preview Group'}
                   </p>
 
                   <p className="text-xs text-slate-500">
-                    Identitas dibuat otomatis oleh sistem
+                    {isEditing
+                      ? 'ID group dan seluruh data peserta tetap dipertahankan'
+                      : 'Identitas dibuat otomatis oleh sistem'}
                   </p>
                 </div>
               </div>
@@ -606,7 +674,11 @@ export default function CreateGroupModal({
               disabled={saving}
               className="inline-flex h-12 min-w-[170px] items-center justify-center rounded-xl bg-gradient-to-b from-[#014D2F] to-[#013220] px-6 text-sm font-bold text-white shadow-[0_6px_18px_rgba(1,50,32,0.22)] transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {saving ? 'Menyimpan...' : 'Simpan Group'}
+              {saving
+                ? 'Menyimpan...'
+                : isEditing
+                  ? 'Simpan Perubahan'
+                  : 'Simpan Group'}
             </button>
           </div>
         </form>

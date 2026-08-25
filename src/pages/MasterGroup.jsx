@@ -1,3 +1,6 @@
+
+
+
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
@@ -20,6 +23,7 @@ export default function MasterGroup() {
   const {
     masterGroups,
     addMasterGroup,
+    updateGroup,
     archiveGroup,
     deleteGroup,
   } = useMasterData()
@@ -28,6 +32,7 @@ export default function MasterGroup() {
   const [statusFilter, setStatusFilter] = useState('SEMUA')
   const [page, setPage] = useState(1)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [editingGroup, setEditingGroup] = useState(null)
   const [dateFilter, setDateFilter] = useState('')
 
   const [qrMonitorGroup, setQrMonitorGroup] = useState(null)
@@ -407,6 +412,9 @@ export default function MasterGroup() {
                     onQrMonitor={(selectedGroup) =>
                       setQrMonitorGroup(selectedGroup)
                     }
+                    onEdit={(selectedGroup) =>
+                      setEditingGroup(selectedGroup)
+                    }
                     onMoveToReport={requestMoveToReport}
                     onDelete={requestDeleteGroup}
                   />
@@ -483,6 +491,20 @@ export default function MasterGroup() {
               setDateFilter('')
               setPage(1)
               setShowCreateModal(false)
+            }}
+          />
+        )}
+
+        {editingGroup && (
+          <CreateGroupModal
+            masterGroups={masterGroups}
+            editingGroup={editingGroup}
+            updateGroup={updateGroup}
+            onClose={() =>
+              setEditingGroup(null)
+            }
+            onUpdated={() => {
+              setEditingGroup(null)
             }}
           />
         )}
