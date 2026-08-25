@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
   computeGroupStats,
   formatTanggalKegiatan,
@@ -121,6 +122,85 @@ function IconKebab({ className }) {
   )
 }
 
+function IconEdit({ className }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.8}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M13.5 6.5l4 4M4 20l4.25-1 10.4-10.4a2.12 2.12 0 00-3-3L5.25 17 4 20z"
+      />
+    </svg>
+  )
+}
+
+function IconQr({ className }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.8}
+    >
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M14 14h3v3h-3v-3zm4 0h3v3m-3 1v3h3m-7-3v3h3"
+      />
+    </svg>
+  )
+}
+
+function IconArchive({ className }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.8}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4 7h16M6 7v12h12V7M9 11h6M5 3h14a1 1 0 011 1v3H4V4a1 1 0 011-1z"
+      />
+    </svg>
+  )
+}
+
+function IconTrash({ className }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.8}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4 7h16m-10 4v6m4-6v6M9 7V4h6v3m-9 0 1 14h10l1-14"
+      />
+    </svg>
+  )
+}
+
 function WatermarkGroup({ className }) {
   return (
     <svg
@@ -166,10 +246,10 @@ function StatColumn({
     <div className="flex min-h-[70px] flex-1 items-start justify-center px-1">
       <div
         className={`flex h-[58px] w-full flex-col items-center ${showDivider
-            ? isActive
-              ? 'border-l border-white/25'
-              : 'border-l border-slate-200'
-            : ''
+          ? isActive
+            ? 'border-l border-white/25'
+            : 'border-l border-slate-200'
+          : ''
           }`}
       >
         <div
@@ -199,7 +279,14 @@ export default function MasterGroupCard({
   index,
   status,
   onManage,
+  onEdit,
+  onQrMonitor,
+  onMoveToReport,
+  onDelete,
 }) {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef(null)
+
   const stats = computeGroupStats(group)
   const isSelesai = status === 'SELESAI'
   const tone = isSelesai ? 'done' : 'active'
@@ -208,7 +295,34 @@ export default function MasterGroupCard({
     group.instansi,
     group.unitKunjungan,
   )
+  useEffect(() => {
+    if (!menuOpen) return undefined
 
+    function handlePointerDown(event) {
+      if (!menuRef.current?.contains(event.target)) {
+        setMenuOpen(false)
+      }
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [menuOpen])
+
+  function handleMenuAction(callback) {
+    setMenuOpen(false)
+    callback?.(group)
+  }
   const cardClass = isSelesai
     ? 'relative flex h-[406px] flex-col overflow-hidden rounded-[27px] border border-slate-200/90 bg-gradient-to-br from-white via-[#f8faf9] to-[#f1f4f3] p-[23px] text-[#0B2E26] shadow-[0_8px_28px_rgba(15,23,42,0.07)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_36px_rgba(15,23,42,0.1)]'
     : 'relative flex h-[406px] flex-col overflow-hidden rounded-[27px] bg-gradient-to-br from-[#02503B] via-[#04694B] to-[#02503B] p-[23px] text-white shadow-[0_10px_36px_rgba(2,80,59,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_44px_rgba(2,80,59,0.34)]'
@@ -233,24 +347,24 @@ export default function MasterGroupCard({
       >
         <WatermarkGroup
           className={`absolute right-[22px] top-[128px] h-[84px] w-[100px] ${isSelesai
-              ? 'text-[#013220]/[0.15]'
-              : 'text-white/[0.28]'
+            ? 'text-[#013220]/[0.15]'
+            : 'text-white/[0.28]'
             }`}
         />
       </div>
 
       <div className="relative z-10 flex h-full flex-col">
-      <div className="mb-3 flex h-[34px] shrink-0 items-center gap-1.5">
+        <div className="mb-3 flex h-[34px] shrink-0 items-center gap-1.5">
           <span
             className={`inline-flex h-[34px] w-[78px] shrink-0 items-center justify-center gap-2 rounded-full border text-[10px] font-bold uppercase tracking-[0.05em] ${isSelesai
-                ? 'border-slate-200 bg-slate-100 text-slate-600'
-                : 'border-white/25 bg-white/[0.07] text-white'
+              ? 'border-slate-200 bg-slate-100 text-slate-600'
+              : 'border-white/25 bg-white/[0.07] text-white'
               }`}
           >
             <span
               className={`h-2 w-2 shrink-0 rounded-full ${isSelesai
-                  ? 'bg-slate-500'
-                  : 'bg-emerald-300 shadow-[0_0_8px_rgba(110,231,183,0.95)]'
+                ? 'bg-slate-500'
+                : 'bg-emerald-300 shadow-[0_0_8px_rgba(110,231,183,0.95)]'
                 }`}
             />
 
@@ -261,8 +375,8 @@ export default function MasterGroupCard({
             <span
               title={group.unitKunjungan}
               className={`flex h-[34px] min-w-0 flex-1 items-center justify-center overflow-hidden rounded-full border px-1.5 text-[10px] font-bold uppercase tracking-[0.05em] ${isSelesai
-                  ? 'border-slate-200 bg-white/80 text-slate-600'
-                  : 'border-white/25 bg-white/[0.07] text-white'
+                ? 'border-slate-200 bg-white/80 text-slate-600'
+                : 'border-white/25 bg-white/[0.07] text-white'
                 }`}
             >
               <span className="block min-w-0 truncate">
@@ -275,30 +389,98 @@ export default function MasterGroupCard({
 
           <span
             className={`inline-flex h-[34px] w-[84px] shrink-0 items-center justify-center rounded-full border px-2 font-mono text-[10px] font-bold uppercase tracking-[0.05em] ${isSelesai
-                ? 'border-slate-200 bg-white/80 text-slate-600'
-                : 'border-white/25 bg-white/[0.07] text-white'
+              ? 'border-slate-200 bg-white/80 text-slate-600'
+              : 'border-white/25 bg-white/[0.07] text-white'
               }`}
           >
             {group.groupId}
           </span>
 
-          <button
-            type="button"
-            aria-label={`Menu ${group.name}`}
-            className={`flex h-[34px] w-[18px] shrink-0 items-center justify-center transition-colors ${isSelesai
-                ? 'text-slate-500 hover:text-slate-700'
-                : 'text-white/80 hover:text-white'
-              }`}
-          >
-            <IconKebab className="h-[18px] w-[18px]" />
-          </button>
+          <div ref={menuRef} className="relative z-50 shrink-0">
+            <button
+              type="button"
+              aria-label={`Menu aksi ${group.name}`}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((current) => !current)}
+              className={`flex h-[34px] w-[18px] items-center justify-center transition-colors ${isSelesai
+                  ? 'text-slate-500 hover:text-slate-700'
+                  : 'text-white/80 hover:text-white'
+                }`}
+            >
+              <IconKebab className="h-[18px] w-[18px]" />
+            </button>
+
+            <AnimatePresence>
+              {menuOpen && (
+                <motion.div
+                  role="menu"
+                  initial={{ opacity: 0, y: -5, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -5, scale: 0.97 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-[40px] z-50 w-[230px] origin-top-right overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 text-[#0B2E26] shadow-[0_18px_45px_rgba(2,37,30,0.22)]"
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => handleMenuAction(onEdit)}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold transition-colors hover:bg-[#013220]/[0.06]"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#013220]/[0.07] text-[#013220]">
+                      <IconEdit className="h-[18px] w-[18px]" />
+                    </span>
+                    <span>Edit Group</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => handleMenuAction(onQrMonitor)}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold transition-colors hover:bg-[#013220]/[0.06]"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#013220]/[0.07] text-[#013220]">
+                      <IconQr className="h-[18px] w-[18px]" />
+                    </span>
+                    <span>QR Monitor</span>
+                  </button>
+
+                  <div className="my-2 border-t border-slate-200" />
+
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => handleMenuAction(onMoveToReport)}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold text-[#8a6d12] transition-colors hover:bg-amber-50"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-[#b8941f]">
+                      <IconArchive className="h-[18px] w-[18px]" />
+                    </span>
+                    <span>Pindahkan ke Laporan</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => handleMenuAction(onDelete)}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold text-red-600 transition-colors hover:bg-red-50"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600">
+                      <IconTrash className="h-[18px] w-[18px]" />
+                    </span>
+                    <span>Hapus Group</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         <div className="min-h-[95px] max-w-[205px] shrink-0">
           <h3
             className={`text-[23px] font-bold leading-[1.22] tracking-[-0.01em] ${isSelesai
-                ? 'text-[#0B2E26]'
-                : 'text-white'
+              ? 'text-[#0B2E26]'
+              : 'text-white'
               }`}
           >
             {group.name}
@@ -307,8 +489,8 @@ export default function MasterGroupCard({
 
         <p
           className={`mt-1 flex h-6 shrink-0 items-center gap-2.5 text-[15px] font-medium ${isSelesai
-              ? 'text-slate-500'
-              : 'text-white'
+            ? 'text-slate-500'
+            : 'text-white'
             }`}
         >
           <IconCalendar className="h-[18px] w-[18px] shrink-0" />
@@ -322,8 +504,8 @@ export default function MasterGroupCard({
 
         <div
           className={`mt-7 shrink-0 border-t ${isSelesai
-              ? 'border-slate-200/90'
-              : 'border-white/20'
+            ? 'border-slate-200/90'
+            : 'border-white/20'
             }`}
         />
 
@@ -358,8 +540,8 @@ export default function MasterGroupCard({
             type="button"
             onClick={() => onManage(group.id)}
             className={`flex h-[56px] w-full items-center rounded-[18px] px-5 transition-all duration-200 ${isSelesai
-                ? 'border border-[rgba(1,50,32,0.12)] bg-white text-[#06251E] shadow-[0_4px_14px_rgba(15,23,42,0.06)] hover:bg-[#f8faf9]'
-                : 'bg-white text-[#06251E] shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:bg-[#f7faf9]'
+              ? 'border border-[rgba(1,50,32,0.12)] bg-white text-[#06251E] shadow-[0_4px_14px_rgba(15,23,42,0.06)] hover:bg-[#f8faf9]'
+              : 'bg-white text-[#06251E] shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:bg-[#f7faf9]'
               }`}
           >
             <span className="flex-1 text-center text-[16px] font-semibold tracking-[0.01em]">
