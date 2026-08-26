@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
+import ConfirmModal from '../components/ConfirmModal'
+import QrModal from '../components/QrModal'
 import GroupDetailActions from '../components/group-detail/GroupDetailActions'
 import GroupDetailHeader from '../components/group-detail/GroupDetailHeader'
 import GroupDetailProgress from '../components/group-detail/GroupDetailProgress'
@@ -59,10 +61,21 @@ export default function GroupDetail() {
   const {
     masterGroups,
     addParticipant,
+    updateParticipant,
+    deleteParticipant,
   } = useMasterData()
 
   const [showParticipantModal, setShowParticipantModal] =
     useState(false)
+
+  const [editingParticipant, setEditingParticipant] =
+    useState(null)
+
+  const [qrParticipant, setQrParticipant] =
+    useState(null)
+
+  const [deletingParticipant, setDeletingParticipant] =
+    useState(null)
 
   const group = masterGroups.find(
     (item) => item.id === groupId,
@@ -107,6 +120,56 @@ export default function GroupDetail() {
     )
 
     return addParticipant(group.id, participant)
+  }
+
+  async function handleEditParticipant(formData) {
+    if (!editingParticipant) {
+      return {
+        ok: false,
+        message:
+          'Data peserta yang akan diedit tidak ditemukan.',
+      }
+    }
+
+    return updateParticipant(
+      group.id,
+      editingParticipant.id,
+      formData,
+    )
+  }
+
+  function handleViewAttendance(participant) {
+    if (participant.kehadiran !== 'HADIR') return
+
+    navigate('/review', {
+      state: {
+        mode: 'real',
+        groupId: group.id,
+        participantId: participant.id,
+        readOnly: true,
+        returnTo: `/group/${group.id}`,
+        returnLabel: 'Kembali ke Detail Group',
+      },
+    })
+  }
+
+  async function handleDeleteParticipant() {
+    if (!deletingParticipant) return
+
+    const result = await deleteParticipant(
+      group.id,
+      deletingParticipant.id,
+    )
+
+    if (result?.ok === false) {
+      window.alert(
+        result.message ||
+        'Peserta gagal dihapus. Silakan coba lagi.',
+      )
+      return
+    }
+
+    setDeletingParticipant(null)
   }
 
   return (
@@ -155,6 +218,16 @@ export default function GroupDetail() {
         <ParticipantsTable
           group={group}
           stats={stats}
+          onEditParticipant={(participant) =>
+            setEditingParticipant(participant)
+          }
+          onViewAttendance={handleViewAttendance}
+          onDownloadQr={(participant) =>
+            setQrParticipant(participant)
+          }
+          onDeleteParticipant={(participant) =>
+            setDeletingParticipant(participant)
+          }
         />
       </div>
 
@@ -164,6 +237,39 @@ export default function GroupDetail() {
           onSubmit={handleAddParticipant}
           onClose={() =>
             setShowParticipantModal(false)
+          }
+        />
+      )}
+
+      {editingParticipant && (
+        <ParticipantFormModal
+          group={group}
+          participant={editingParticipant}
+          onSubmit={handleEditParticipant}
+          onClose={() =>
+            setEditingParticipant(null)
+          }
+        />
+      )}
+      {qrParticipant && (
+        <QrModal
+          participant={qrParticipant}
+          group={group}
+          onClose={() =>
+            setQrParticipant(null)
+          }
+        />
+      )}
+      {deletingParticipant && (
+        <ConfirmModal
+          title="Hapus Peserta?"
+          message={`Peserta "${deletingParticipant.nama}" akan dihapus permanen.\n\nQR dan seluruh data kehadiran peserta ini juga ikut terhapus. Tindakan ini tidak dapat dibatalkan.`}
+          confirmLabel="Hapus Peserta"
+          cancelLabel="Batal"
+          danger
+          onConfirm={handleDeleteParticipant}
+          onCancel={() =>
+            setDeletingParticipant(null)
           }
         />
       )}

@@ -319,17 +319,45 @@ export async function addParticipant(groupId, participant) {
     participant: savedParticipant,
   }
 }
-export async function updateParticipant(groupId, participantId, updates) {
+export async function updateParticipant(
+  groupId,
+  participantId,
+  updates,
+) {
   const payload = {}
 
-  if (updates.nama !== undefined) payload.nama = toTitleCase(updates.nama)
-  if (updates.jabatan !== undefined) payload.jabatan = toTitleCase(updates.jabatan)
-  if (updates.role !== undefined) payload.role = updates.role
-  if (updates.qrId !== undefined) payload.qr_id = updates.qrId
-  if (updates.kehadiran !== undefined) payload.kehadiran = updates.kehadiran
-  if (updates.foto !== undefined) payload.foto = updates.foto
-  if (updates.jamHadir !== undefined) payload.jam_hadir = updates.jamHadir
-  if (updates.tanggalHadir !== undefined) payload.tanggal_hadir = updates.tanggalHadir
+  if (updates.nama !== undefined) {
+    payload.nama = toTitleCase(updates.nama)
+  }
+
+  if (updates.jabatan !== undefined) {
+    payload.jabatan = toTitleCase(updates.jabatan)
+  }
+
+  if (updates.role !== undefined) {
+    payload.role = updates.role
+  }
+
+  if (updates.qrId !== undefined) {
+    payload.qr_id = updates.qrId
+  }
+
+  if (updates.kehadiran !== undefined) {
+    payload.kehadiran = updates.kehadiran
+  }
+
+  if (updates.foto !== undefined) {
+    payload.foto = updates.foto
+  }
+
+  if (updates.jamHadir !== undefined) {
+    payload.jam_hadir = updates.jamHadir
+  }
+
+  if (updates.tanggalHadir !== undefined) {
+    payload.tanggal_hadir = updates.tanggalHadir
+  }
+
   if (updates.checkInAt !== undefined) {
     payload.check_in_at = updates.checkInAt
       ? new Date(updates.checkInAt).toISOString()
@@ -342,51 +370,88 @@ export async function updateParticipant(groupId, participantId, updates) {
     .eq('id', participantId)
 
   if (error) {
-    console.error('[DIHATIMU] Gagal update peserta:', error)
-    alert('Gagal update peserta.')
-    return
-  }
-
-  masterGroups = masterGroups.map((g) => {
-    if (g.id !== groupId) return g
+    console.error(
+      '[DIHATIMU] Gagal update peserta:',
+      error,
+    )
 
     return {
-      ...g,
-      participants: g.participants.map((p) =>
-        p.id === participantId
+      ok: false,
+      message: 'Gagal memperbarui peserta di Supabase.',
+      error,
+    }
+  }
+
+  masterGroups = masterGroups.map((group) => {
+    if (group.id !== groupId) return group
+
+    return {
+      ...group,
+      participants: group.participants.map((participant) =>
+        participant.id === participantId
           ? {
-            ...p,
+            ...participant,
             ...updates,
-            nama: updates.nama ? toTitleCase(updates.nama) : p.nama,
-            jabatan: updates.jabatan ? toTitleCase(updates.jabatan) : p.jabatan,
+            nama:
+              updates.nama !== undefined
+                ? toTitleCase(updates.nama)
+                : participant.nama,
+            jabatan:
+              updates.jabatan !== undefined
+                ? toTitleCase(updates.jabatan)
+                : participant.jabatan,
           }
-          : p,
+          : participant,
       ),
     }
   })
 
   notify()
+
+  return {
+    ok: true,
+  }
 }
 
-export async function deleteParticipant(groupId, participantId) {
+export async function deleteParticipant(
+  groupId,
+  participantId,
+) {
   const { error } = await supabase
     .from('participants')
     .delete()
     .eq('id', participantId)
 
   if (error) {
-    console.error('[DIHATIMU] Gagal hapus peserta:', error)
-    alert('Gagal hapus peserta.')
-    return
+    console.error(
+      '[DIHATIMU] Gagal hapus peserta:',
+      error,
+    )
+
+    return {
+      ok: false,
+      message:
+        'Peserta gagal dihapus dari Supabase. Silakan coba lagi.',
+    }
   }
 
-  masterGroups = masterGroups.map((g) =>
-    g.id === groupId
-      ? { ...g, participants: g.participants.filter((p) => p.id !== participantId) }
-      : g,
+  masterGroups = masterGroups.map((group) =>
+    group.id === groupId
+      ? {
+        ...group,
+        participants: group.participants.filter(
+          (participant) =>
+            participant.id !== participantId,
+        ),
+      }
+      : group,
   )
 
   notify()
+
+  return {
+    ok: true,
+  }
 }
 
 export function findGroupById(groupId) {

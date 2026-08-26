@@ -38,6 +38,11 @@ export default function Review() {
   const scan = location.state
   const readOnly = scan?.readOnly === true
 
+  const returnTo = scan?.returnTo || '/scanner'
+  const returnLabel =
+    scan?.returnLabel ||
+    (readOnly ? 'Scan QR Lain' : 'Batal')
+
   const realData = useMemo(() => {
     if (scan?.mode !== 'real') return null
     const group = masterGroups.find((g) => g.id === scan.groupId)
@@ -91,11 +96,11 @@ export default function Review() {
       : []),
     ...(participant.tanggalHadir
       ? [
-          {
-            label: 'Tanggal Hadir',
-            value: formatTanggalKegiatan(participant.tanggalHadir),
-          },
-        ]
+        {
+          label: 'Tanggal Hadir',
+          value: formatTanggalKegiatan(participant.tanggalHadir),
+        },
+      ]
       : []),
   ]
 
@@ -136,10 +141,11 @@ export default function Review() {
       <header className="bg-dihatimu-dark px-4 py-4 text-white">
         <button
           type="button"
-          onClick={() => navigate('/scanner')}
-          className="text-sm text-white/80"
+          onClick={() => navigate(returnTo)}
+          className="inline-flex items-center gap-2 text-sm text-white/80 transition-colors hover:text-white"
         >
-          ← Scan ulang
+          <span aria-hidden="true">←</span>
+          {scan?.returnLabel || 'Scan ulang'}
         </button>
         <h1 className="mt-2 text-xl font-bold">Review Data Kehadiran</h1>
         <p className="text-sm text-white/70">Verifikasi peserta sebelum menyimpan</p>
@@ -267,10 +273,10 @@ export default function Review() {
           )}
           <button
             type="button"
-            onClick={() => navigate('/scanner')}
-            className="w-full rounded-2xl border border-soft-gray-dark bg-white py-4 font-medium text-gray-700"
+            onClick={() => navigate(returnTo)}
+            className="w-full rounded-2xl border border-soft-gray-dark bg-white py-4 font-medium text-gray-700 transition-colors hover:bg-slate-50"
           >
-            {readOnly ? 'Scan QR Lain' : 'Batal'}
+            {returnLabel}
           </button>
         </div>
       </main>

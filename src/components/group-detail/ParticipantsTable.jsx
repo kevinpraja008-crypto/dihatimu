@@ -239,14 +239,12 @@ function AttendanceStatus({ participant }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-2 text-xs font-semibold ${
-        hadir ? 'text-emerald-700' : 'text-emerald-700'
-      }`}
+      className={`inline-flex items-center gap-2 text-xs font-semibold ${hadir ? 'text-emerald-700' : 'text-emerald-700'
+        }`}
     >
       <span
-        className={`h-2 w-2 rounded-full ${
-          hadir ? 'bg-emerald-500' : 'bg-emerald-500'
-        }`}
+        className={`h-2 w-2 rounded-full ${hadir ? 'bg-emerald-500' : 'bg-emerald-500'
+          }`}
       />
       {hadir ? 'Hadir' : 'Belum Hadir'}
     </span>
@@ -258,7 +256,13 @@ function ParticipantMenu({
   open,
   onToggle,
   onClose,
+  onEdit,
+  onViewAttendance,
+  onDownloadQr,
+  onDelete,
 }) {
+  const hadir = participant.kehadiran === 'HADIR'
+
   return (
     <div className="relative inline-flex">
       <button
@@ -266,11 +270,10 @@ function ParticipantMenu({
         aria-label={`Aksi peserta ${participant.nama}`}
         aria-expanded={open}
         onClick={onToggle}
-        className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${
-          open
-            ? 'border-[#013220] bg-[#013220] text-white'
-            : 'border-slate-200 bg-white text-[#0B2E26] hover:bg-slate-50'
-        }`}
+        className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${open
+          ? 'border-[#013220] bg-[#013220] text-white'
+          : 'border-slate-200 bg-white text-[#0B2E26] hover:bg-slate-50'
+          }`}
       >
         <IconDots className="h-[17px] w-[17px]" />
       </button>
@@ -298,16 +301,34 @@ function ParticipantMenu({
           >
             <button
               type="button"
-              onClick={onClose}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
+              disabled={!hadir}
+              onClick={() => {
+                if (!hadir) return
+
+                onClose()
+                onViewAttendance?.(participant)
+              }}
+              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors ${hadir
+                ? 'text-slate-700 hover:bg-slate-50'
+                : 'cursor-not-allowed text-slate-400'
+                }`}
             >
-              <IconEye className="h-[18px] w-[18px] text-[#013220]" />
-              Lihat Kehadiran
+              <IconEye
+                className={`h-[18px] w-[18px] ${hadir ? 'text-[#013220]' : 'text-slate-300'
+                  }`}
+              />
+
+              {hadir
+                ? 'Lihat Kehadiran'
+                : 'Belum ada data kehadiran'}
             </button>
 
             <button
               type="button"
-              onClick={onClose}
+              onClick={() => {
+                onClose()
+                onEdit?.(participant)
+              }}
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
               <IconEdit className="h-[18px] w-[18px] text-[#013220]" />
@@ -316,8 +337,11 @@ function ParticipantMenu({
 
             <button
               type="button"
-              onClick={onClose}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
+              onClick={() => {
+                onClose()
+                onDownloadQr?.(participant)
+              }}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
             >
               <IconQr className="h-[18px] w-[18px] text-[#013220]" />
               Download QR
@@ -327,8 +351,11 @@ function ParticipantMenu({
 
             <button
               type="button"
-              onClick={onClose}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-red-600 hover:bg-red-50"
+              onClick={() => {
+                onClose()
+                onDelete?.(participant)
+              }}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-red-600 transition-colors hover:bg-red-50"
             >
               <IconTrash className="h-[18px] w-[18px]" />
               Hapus Peserta
@@ -382,6 +409,10 @@ function getAttendanceDate(participant) {
 export default function ParticipantsTable({
   group,
   stats,
+  onEditParticipant,
+  onViewAttendance,
+  onDownloadQr,
+  onDeleteParticipant,
 }) {
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] =
@@ -525,11 +556,10 @@ export default function ParticipantsTable({
                     onClick={() =>
                       setStatusFilter(filter.value)
                     }
-                    className={`flex-1 rounded-lg px-4 py-2 text-xs font-bold transition-colors sm:flex-none ${
-                      active
-                        ? 'bg-[#013220] text-white shadow-sm'
-                        : 'text-slate-600 hover:bg-white'
-                    }`}
+                    className={`flex-1 rounded-lg px-4 py-2 text-xs font-bold transition-colors sm:flex-none ${active
+                      ? 'bg-[#013220] text-white shadow-sm'
+                      : 'text-slate-600 hover:bg-white'
+                      }`}
                   >
                     {filter.label}
                   </button>
@@ -551,24 +581,24 @@ export default function ParticipantsTable({
       {visibleParticipants.length === 0 ? (
         <div className="px-6 py-14 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
-  <svg
-    aria-hidden="true"
-    viewBox="0 0 24 24"
-    fill="none"
-    className="h-7 w-7"
-    stroke="currentColor"
-    strokeWidth={1.9}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="7" r="3" />
-    <path d="M6.5 20v-1.5a5.5 5.5 0 0111 0V20" />
-    <circle cx="5.5" cy="9" r="2" />
-    <path d="M2 19v-1a4 4 0 014-4" />
-    <circle cx="18.5" cy="9" r="2" />
-    <path d="M22 19v-1a4 4 0 00-4-4" />
-  </svg>
-</div>
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              className="h-7 w-7"
+              stroke="currentColor"
+              strokeWidth={1.9}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="7" r="3" />
+              <path d="M6.5 20v-1.5a5.5 5.5 0 0111 0V20" />
+              <circle cx="5.5" cy="9" r="2" />
+              <path d="M2 19v-1a4 4 0 014-4" />
+              <circle cx="18.5" cy="9" r="2" />
+              <path d="M22 19v-1a4 4 0 00-4-4" />
+            </svg>
+          </div>
 
           <p className="mt-4 font-semibold text-[#0B2E26]">
             {participants.length === 0
@@ -679,6 +709,10 @@ export default function ParticipantsTable({
                           onClose={() =>
                             setOpenMenuId(null)
                           }
+                          onEdit={onEditParticipant}
+                          onViewAttendance={onViewAttendance}
+                          onDownloadQr={onDownloadQr}
+                          onDelete={onDeleteParticipant}
                         />
                       </td>
                     </tr>
@@ -733,6 +767,10 @@ export default function ParticipantsTable({
                       onClose={() =>
                         setOpenMenuId(null)
                       }
+                      onEdit={onEditParticipant}
+                      onViewAttendance={onViewAttendance}
+                      onDownloadQr={onDownloadQr}
+                      onDelete={onDeleteParticipant}
                     />
                   </div>
 
@@ -801,11 +839,10 @@ export default function ParticipantsTable({
               key={pageNumber}
               type="button"
               onClick={() => setPage(pageNumber)}
-              className={`flex h-9 min-w-9 items-center justify-center rounded-lg px-2 text-xs font-bold ${
-                page === pageNumber
-                  ? 'bg-[#013220] text-white shadow-sm'
-                  : 'border border-slate-200 bg-white text-[#013220]'
-              }`}
+              className={`flex h-9 min-w-9 items-center justify-center rounded-lg px-2 text-xs font-bold ${page === pageNumber
+                ? 'bg-[#013220] text-white shadow-sm'
+                : 'border border-slate-200 bg-white text-[#013220]'
+                }`}
             >
               {pageNumber}
             </button>
