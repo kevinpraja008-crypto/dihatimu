@@ -28,9 +28,9 @@ function dbGroupToApp(row, participants = []) {
     name: row.name,
     instansi: row.instansi,
     level: row.level,
-wilayah: row.wilayah,
-unitKunjungan: row.unit_kunjungan || '',
-code: row.code,
+    wilayah: row.wilayah,
+    unitKunjungan: row.unit_kunjungan || '',
+    code: row.code,
     status: row.status,
     tanggalKegiatan: row.tanggal_kegiatan,
     catatan: row.catatan || '',
@@ -59,9 +59,9 @@ function groupToDb(group) {
     name: group.name,
     instansi: group.instansi,
     level: group.level,
-wilayah: group.wilayah,
-unit_kunjungan: group.unitKunjungan || null,
-code: group.code,
+    wilayah: group.wilayah,
+    unit_kunjungan: group.unitKunjungan || null,
+    code: group.code,
     status: group.status || 'active',
     tanggal_kegiatan: group.tanggalKegiatan,
     catatan: group.catatan || '',
@@ -290,21 +290,35 @@ export async function addParticipant(groupId, participant) {
 
   if (error) {
     console.error('[DIHATIMU] Gagal tambah peserta:', error)
-    alert('Gagal menyimpan peserta ke Supabase.')
-    return
+
+    return {
+      ok: false,
+      message: 'Gagal menyimpan peserta ke Supabase.',
+      error,
+    }
   }
 
   const savedParticipant = dbParticipantToApp(data)
 
-  masterGroups = masterGroups.map((g) =>
-    g.id === groupId
-      ? { ...g, participants: [...g.participants, savedParticipant] }
-      : g,
+  masterGroups = masterGroups.map((group) =>
+    group.id === groupId
+      ? {
+        ...group,
+        participants: [
+          ...group.participants,
+          savedParticipant,
+        ],
+      }
+      : group,
   )
 
   notify()
-}
 
+  return {
+    ok: true,
+    participant: savedParticipant,
+  }
+}
 export async function updateParticipant(groupId, participantId, updates) {
   const payload = {}
 
@@ -341,11 +355,11 @@ export async function updateParticipant(groupId, participantId, updates) {
       participants: g.participants.map((p) =>
         p.id === participantId
           ? {
-              ...p,
-              ...updates,
-              nama: updates.nama ? toTitleCase(updates.nama) : p.nama,
-              jabatan: updates.jabatan ? toTitleCase(updates.jabatan) : p.jabatan,
-            }
+            ...p,
+            ...updates,
+            nama: updates.nama ? toTitleCase(updates.nama) : p.nama,
+            jabatan: updates.jabatan ? toTitleCase(updates.jabatan) : p.jabatan,
+          }
           : p,
       ),
     }
@@ -438,13 +452,13 @@ export async function recordCheckIn(
       participants: g.participants.map((p) =>
         p.id === participantId
           ? {
-              ...p,
-              kehadiran: 'HADIR',
-              foto: foto ?? p.foto,
-              jamHadir: time,
-              tanggalHadir: date,
-              checkInAt: Date.now(),
-            }
+            ...p,
+            kehadiran: 'HADIR',
+            foto: foto ?? p.foto,
+            jamHadir: time,
+            tanggalHadir: date,
+            checkInAt: Date.now(),
+          }
           : p,
       ),
     }

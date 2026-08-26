@@ -1,13 +1,16 @@
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
 import GroupDetailActions from '../components/group-detail/GroupDetailActions'
 import GroupDetailHeader from '../components/group-detail/GroupDetailHeader'
 import GroupDetailProgress from '../components/group-detail/GroupDetailProgress'
 import GroupDetailStats from '../components/group-detail/GroupDetailStats'
+import ParticipantFormModal from '../components/group-detail/ParticipantFormModal'
 import ParticipantsTable from '../components/group-detail/ParticipantsTable'
 import { useMasterData } from '../context/MasterDataContext'
 import {
   computeGroupStats,
+  createParticipant,
   formatTanggalKegiatan,
 } from '../data/dummy'
 
@@ -52,9 +55,18 @@ function IconCalendar({ className }) {
 export default function GroupDetail() {
   const { groupId } = useParams()
   const navigate = useNavigate()
-  const { masterGroups } = useMasterData()
 
-  const group = masterGroups.find((item) => item.id === groupId)
+  const {
+    masterGroups,
+    addParticipant,
+  } = useMasterData()
+
+  const [showParticipantModal, setShowParticipantModal] =
+    useState(false)
+
+  const group = masterGroups.find(
+    (item) => item.id === groupId,
+  )
 
   if (!group) {
     return (
@@ -83,8 +95,19 @@ export default function GroupDetail() {
   }
 
   const stats = computeGroupStats(group)
+
   const isSelesai =
     stats.total > 0 && stats.hadir === stats.total
+
+  async function handleAddParticipant(formData) {
+    const participant = createParticipant(
+      group,
+      formData,
+      masterGroups,
+    )
+
+    return addParticipant(group.id, participant)
+  }
 
   return (
     <AdminLayout
@@ -105,7 +128,10 @@ export default function GroupDetail() {
           {group.tanggalKegiatan && (
             <div className="inline-flex h-11 items-center gap-2.5 rounded-xl border border-[rgba(1,50,32,0.1)] bg-white px-4 text-sm font-medium text-[#0B2E26] shadow-[0_4px_14px_rgba(15,23,42,0.05)]">
               <IconCalendar className="h-[18px] w-[18px] text-[#013220]" />
-              {formatTanggalKegiatan(group.tanggalKegiatan)}
+
+              {formatTanggalKegiatan(
+                group.tanggalKegiatan,
+              )}
             </div>
           )}
         </div>
@@ -120,13 +146,27 @@ export default function GroupDetail() {
           <GroupDetailProgress stats={stats} />
         </div>
 
-        <GroupDetailActions />
+        <GroupDetailActions
+          onAddParticipant={() =>
+            setShowParticipantModal(true)
+          }
+        />
 
         <ParticipantsTable
           group={group}
           stats={stats}
         />
       </div>
+
+      {showParticipantModal && (
+        <ParticipantFormModal
+          group={group}
+          onSubmit={handleAddParticipant}
+          onClose={() =>
+            setShowParticipantModal(false)
+          }
+        />
+      )}
     </AdminLayout>
   )
 }

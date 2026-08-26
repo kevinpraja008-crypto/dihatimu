@@ -19,7 +19,10 @@ function IconPlus({ className }) {
   )
 }
 
-export default function GroupDetailActions() {
+export default function GroupDetailActions({
+  onAddParticipant,
+  disabled = false,
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -29,7 +32,9 @@ export default function GroupDetailActions() {
     >
       <button
         type="button"
-        className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-[#04613F] to-[#013220] px-6 text-sm font-bold text-white shadow-[0_6px_18px_rgba(1,50,32,0.22)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_22px_rgba(1,50,32,0.28)] active:translate-y-0"
+        disabled={disabled}
+        onClick={onAddParticipant}
+        className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-[#04613F] to-[#013220] px-6 text-sm font-bold text-white shadow-[0_6px_18px_rgba(1,50,32,0.22)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_22px_rgba(1,50,32,0.28)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
       >
         <IconPlus className="h-[18px] w-[18px]" />
         Tambah Peserta
