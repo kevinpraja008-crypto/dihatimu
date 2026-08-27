@@ -413,6 +413,8 @@ export default function ParticipantsTable({
   onViewAttendance,
   onDownloadQr,
   onDeleteParticipant,
+  onDownloadAllQr,
+  qrDownloadProgress,
 }) {
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] =
@@ -569,10 +571,19 @@ export default function ParticipantsTable({
 
             <button
               type="button"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[rgba(1,50,32,0.16)] bg-white px-4 text-xs font-bold text-[#013220] transition-colors hover:bg-[#013220]/[0.04]"
+              onClick={onDownloadAllQr}
+              disabled={
+                !participants.length ||
+                Boolean(qrDownloadProgress)
+              }
+              aria-busy={Boolean(qrDownloadProgress)}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[rgba(1,50,32,0.16)] bg-white px-4 text-xs font-bold text-[#013220] transition-colors hover:bg-[#013220]/[0.04] disabled:cursor-not-allowed disabled:opacity-50"
             >
               <IconDownload className="h-[18px] w-[18px]" />
-              Download Semua QR
+
+              {qrDownloadProgress
+                ? `Mengunduh ${qrDownloadProgress.downloaded}/${qrDownloadProgress.total}`
+                : 'Download Semua QR'}
             </button>
           </div>
         </div>

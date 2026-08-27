@@ -15,6 +15,7 @@ import {
   createParticipant,
   formatTanggalKegiatan,
 } from '../data/dummy'
+import { downloadAllGroupQrs } from '../data/qrService'
 
 function IconArrowLeft({ className }) {
   return (
@@ -75,6 +76,9 @@ export default function GroupDetail() {
     useState(null)
 
   const [deletingParticipant, setDeletingParticipant] =
+    useState(null)
+
+  const [qrDownloadProgress, setQrDownloadProgress] =
     useState(null)
 
   const group = masterGroups.find(
@@ -172,6 +176,43 @@ export default function GroupDetail() {
     setDeletingParticipant(null)
   }
 
+  async function handleDownloadAllQrs() {
+    if (
+      !group.participants?.length ||
+      qrDownloadProgress
+    ) {
+      return
+    }
+
+    setQrDownloadProgress({
+      downloaded: 0,
+      total: group.participants.length,
+    })
+
+    try {
+      await downloadAllGroupQrs(
+        group,
+        (downloaded, total) => {
+          setQrDownloadProgress({
+            downloaded,
+            total,
+          })
+        },
+      )
+    } catch (error) {
+      console.error(
+        '[DIHATIMU] Gagal download semua QR:',
+        error,
+      )
+
+      window.alert(
+        'QR peserta gagal diunduh. Silakan coba lagi.',
+      )
+    } finally {
+      setQrDownloadProgress(null)
+    }
+  }
+
   return (
     <AdminLayout
       title="Detail Group"
@@ -228,6 +269,8 @@ export default function GroupDetail() {
           onDeleteParticipant={(participant) =>
             setDeletingParticipant(participant)
           }
+          onDownloadAllQr={handleDownloadAllQrs}
+          qrDownloadProgress={qrDownloadProgress}
         />
       </div>
 
