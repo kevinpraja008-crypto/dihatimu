@@ -457,77 +457,202 @@ export async function deleteParticipant(
 export function findGroupById(groupId) {
   return masterGroups.find((g) => g.id === groupId) || null
 }
+export async function beginParticipantCheckIn(
+  groupId,
+  participantId,
+) {
+  const group = masterGroups.find(
+    (item) => item.id === groupId,
+  )
+
+  if (!group) {
+    return {
+      ok: false,
+      message: 'Master Group peserta tidak ditemukan.',
+    }
+  }
+
+  const participant = group.participants.find(
+    (item) => item.id === participantId,
+  )
+
+  if (!participant) {
+    return {
+      ok: false,
+      message: 'Data peserta tidak ditemukan.',
+    }
+  }
+
+  if (participant.kehadiran === 'HADIR') {
+    return {
+      ok: false,
+      message: 'Peserta sudah tercatat hadir.',
+    }
+  }
+
+  const { data, error } = await supabase.rpc(
+    'begin_participant_check_in',
+    {
+      p_group_id: groupId,
+      p_participant_id: participantId,
+    },
+  )
+
+  if (error) {
+    console.error(
+      '[DIHATIMU] Gagal memulai sesi scan:',
+      error,
+    )
+
+    return {
+      ok: false,
+      message:
+        error.message ||
+        'Sesi scan gagal dibuat. Silakan scan ulang.',
+    }
+  }
+
+  if (
+    !data?.ok ||
+    !data?.checkInToken ||
+    !data?.scannedAt
+  ) {
+    return {
+      ok: false,
+      message:
+        'Supabase tidak memberikan waktu scan yang valid.',
+    }
+  }
+
+  return {
+    ok: true,
+    data,
+  }
+}
 
 export async function recordCheckIn(
   groupId,
   participantId,
-  { foto = null, jamHadir, tanggalHadir } = {},
+  {
+    foto = null,
+    checkInToken = null,
+  } = {},
 ) {
-  const now = new Date()
-  const time =
-    jamHadir ||
-    now.toLocaleTimeString('id-ID', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }) + ' WIB'
+  const group = masterGroups.find(
+    (item) => item.id === groupId,
+  )
 
-  const date = tanggalHadir || now.toISOString().split('T')[0]
-  const checkInAt = now.toISOString()
-
-  const group = masterGroups.find((g) => g.id === groupId)
-  const participant = group?.participants.find((p) => p.id === participantId)
-
-  const updatePayload = {
-    kehadiran: 'HADIR',
-    foto: foto ?? participant?.foto ?? null,
-    jam_hadir: time,
-    tanggal_hadir: date,
-    check_in_at: checkInAt,
+  if (!group) {
+    return {
+      ok: false,
+      message: 'Master Group peserta tidak ditemukan.',
+    }
   }
 
-  const { error } = await supabase
-    .from('participants')
-    .update(updatePayload)
-    .eq('id', participantId)
+  const participant = group.participants.find(
+    (item) => item.id === participantId,
+  )
+
+  if (!participant) {
+    return {
+      ok: false,
+      message: 'Data peserta tidak ditemukan.',
+    }
+  }
+
+  if (participant.kehadiran === 'HADIR') {
+    return {
+      ok: false,
+      message: 'Peserta sudah tercatat hadir.',
+    }
+  }
+
+  if (!checkInToken) {
+    return {
+      ok: false,
+      message:
+        'Sesi scan tidak ditemukan. Silakan scan ulang QR peserta.',
+    }
+  }
+
+  if (!foto) {
+    return {
+      ok: false,
+      message: 'Foto kehadiran wajib disertakan.',
+    }
+  }
+
+  const deviceInfo =
+    typeof navigator !== 'undefined'
+      ? navigator.userAgent
+      : null
+
+  const { data, error } = await supabase.rpc(
+    'record_participant_check_in',
+    {
+      p_group_id: groupId,
+      p_participant_id: participantId,
+      p_check_in_token: checkInToken,
+      p_foto: foto,
+      p_device_info: deviceInfo,
+    },
+  )
 
   if (error) {
-    console.error('[DIHATIMU] Gagal simpan kehadiran:', error)
-    alert('Gagal menyimpan kehadiran.')
-    return
-  }
-
-  await supabase.from('attendance_logs').insert({
-    master_group_id: groupId,
-    participant_id: participantId,
-    qr_id: participant?.qrId || null,
-    nama: participant?.nama || null,
-    jabatan: participant?.jabatan || null,
-    foto: foto ?? participant?.foto ?? null,
-    jam_hadir: time,
-    tanggal_hadir: date,
-    device_info: navigator.userAgent,
-  })
-
-  masterGroups = masterGroups.map((g) => {
-    if (g.id !== groupId) return g
+    console.error(
+      '[DIHATIMU] Gagal menyimpan kehadiran:',
+      error,
+    )
 
     return {
-      ...g,
-      participants: g.participants.map((p) =>
-        p.id === participantId
-          ? {
-            ...p,
-            kehadiran: 'HADIR',
-            foto: foto ?? p.foto,
-            jamHadir: time,
-            tanggalHadir: date,
-            checkInAt: Date.now(),
-          }
-          : p,
+      ok: false,
+      message:
+        error.message ||
+        'Kehadiran gagal disimpan. Silakan coba lagi.',
+    }
+  }
+
+  if (!data?.ok) {
+    return {
+      ok: false,
+      message:
+        'Supabase tidak memberikan konfirmasi penyimpanan.',
+    }
+  }
+
+  const parsedCheckInAt = Date.parse(
+    data.checkInAt || '',
+  )
+
+  const checkInAt = Number.isNaN(parsedCheckInAt)
+    ? Date.now()
+    : parsedCheckInAt
+
+  masterGroups = masterGroups.map((item) => {
+    if (item.id !== groupId) return item
+
+    return {
+      ...item,
+      participants: item.participants.map(
+        (currentParticipant) =>
+          currentParticipant.id === participantId
+            ? {
+              ...currentParticipant,
+              kehadiran: 'HADIR',
+              foto,
+              jamHadir: data.jamHadir,
+              tanggalHadir: data.tanggalHadir,
+              checkInAt,
+            }
+            : currentParticipant,
       ),
     }
   })
 
   notify()
+
+  return {
+    ok: true,
+    data,
+  }
 }

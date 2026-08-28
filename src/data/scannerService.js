@@ -171,15 +171,30 @@ export function resolveQrScan(masterGroups, raw) {
 }
 
 /** State navigasi ke halaman Review */
-export function buildReviewState({ group, participant, source }) {
-  const alreadyHadir = participant.kehadiran === 'HADIR'
+export function buildReviewState({
+  group,
+  participant,
+  source,
+  checkInSession = null,
+}) {
+  const alreadyHadir =
+    participant.kehadiran === 'HADIR'
+
   return {
     mode: 'real',
     groupId: group.id,
     participantId: participant.id,
     qrId: participant.qrId,
-    source: source || (group.status === 'archived' ? 'arsip' : 'aktif'),
+    source:
+      source ||
+      (group.status === 'archived'
+        ? 'arsip'
+        : 'aktif'),
     readOnly: alreadyHadir,
     alreadyHadir,
+    checkInToken:
+      checkInSession?.checkInToken || null,
+    scannedAt:
+      checkInSession?.scannedAt || null,
   }
 }

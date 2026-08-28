@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import AttendanceCameraModal from '../components/AttendanceCameraModal'
 import { useMasterData } from '../context/MasterDataContext'
 import { formatTanggalKegiatan } from '../data/dummy'
 import { compressImageFile } from '../utils/imageCompress'
@@ -22,18 +23,88 @@ function FieldRow({ label, value, delay = 0, highlight }) {
     </motion.div>
   )
 }
+const JAKARTA_TIME_ZONE = 'Asia/Jakarta'
+
+const arrivalDateFormatter =
+  new Intl.DateTimeFormat('id-ID', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: JAKARTA_TIME_ZONE,
+  })
+
+const arrivalTimeFormatter =
+  new Intl.DateTimeFormat('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: JAKARTA_TIME_ZONE,
+  })
+
+function parseArrivalDate(value) {
+  if (!value) return null
+
+  const date = new Date(value)
+
+  return Number.isNaN(date.getTime())
+    ? null
+    : date
+}
+
+function formatArrivalDate(value) {
+  const date = parseArrivalDate(value)
+
+  return date
+    ? arrivalDateFormatter.format(date)
+    : '-'
+}
+
+function formatArrivalTime(value) {
+  const date = parseArrivalDate(value)
+
+  return date
+    ? `${arrivalTimeFormatter.format(date)} WIB`
+    : '-'
+}
+
+function getJakartaDateKey(value) {
+  const date = parseArrivalDate(value)
+
+  if (!date) return null
+
+  const parts = new Intl.DateTimeFormat(
+    'en-CA',
+    {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      timeZone: JAKARTA_TIME_ZONE,
+    },
+  ).formatToParts(date)
+
+  const values = Object.fromEntries(
+    parts.map((part) => [
+      part.type,
+      part.value,
+    ]),
+  )
+
+  return `${values.year}-${values.month}-${values.day}`
+}
 
 export default function Review() {
   const navigate = useNavigate()
   const location = useLocation()
   const { masterGroups, recordCheckIn } = useMasterData()
-  const cameraInputRef = useRef(null)
   const galleryInputRef = useRef(null)
 
   const [submitting, setSubmitting] = useState(false)
-  const [doneMsg, setDoneMsg] = useState('')
   const [photoPreview, setPhotoPreview] = useState(null)
   const [photoError, setPhotoError] = useState('')
+  const [saveError, setSaveError] = useState('')
+  const [showCamera, setShowCamera] =
+    useState(false)
 
   const scan = location.state
   const readOnly = scan?.readOnly === true
@@ -76,32 +147,72 @@ export default function Review() {
 
   const { group, participant } = realData
   const alreadyCheckedIn = participant.kehadiran === 'HADIR'
+  const arrivalAt =
+    scan?.scannedAt ||
+    (participant.checkInAt
+      ? new Date(
+        participant.checkInAt,
+      ).toISOString()
+      : null)
+
+  const scheduleDateKey = String(
+    group.tanggalKegiatan || '',
+  ).slice(0, 10)
+
+  const arrivalDateKey =
+    getJakartaDateKey(arrivalAt)
+
+  const arrivalScheduleStatus =
+    !scheduleDateKey || !arrivalDateKey
+      ? 'BELUM DAPAT DIVERIFIKASI'
+      : scheduleDateKey === arrivalDateKey
+        ? 'SESUAI JADWAL'
+        : 'KUNJUNGAN SUSULAN'
 
   const fields = [
-    { label: 'Nama Peserta', value: participant.nama },
-    { label: 'Jabatan', value: participant.jabatan },
-    { label: 'Role', value: participant.role },
-    { label: 'Nama Group', value: group.name },
     {
-      label: 'Tanggal Kegiatan',
-      value: formatTanggalKegiatan(group.tanggalKegiatan),
+      label: 'Nama Peserta',
+      value: participant.nama,
+    },
+    {
+      label: 'Jabatan',
+      value: participant.jabatan,
+    },
+    {
+      label: 'Role',
+      value: participant.role,
+    },
+    {
+      label: 'Nama Group',
+      value: group.name,
+    },
+    {
+      label: 'Jadwal Kegiatan',
+      value: formatTanggalKegiatan(
+        group.tanggalKegiatan,
+      ),
+    },
+    {
+      label: 'Hari/Tanggal Kedatangan',
+      value: formatArrivalDate(arrivalAt),
+    },
+    {
+      label: 'Jam Kedatangan',
+      value: formatArrivalTime(arrivalAt),
+    },
+    {
+      label: 'Keterangan Kedatangan',
+      value: arrivalScheduleStatus,
+      highlight:
+        arrivalScheduleStatus ===
+        'SESUAI JADWAL',
     },
     {
       label: 'Status Kehadiran',
       value: participant.kehadiran,
-      highlight: participant.kehadiran === 'HADIR',
+      highlight:
+        participant.kehadiran === 'HADIR',
     },
-    ...(participant.jamHadir
-      ? [{ label: 'Jam Hadir', value: participant.jamHadir }]
-      : []),
-    ...(participant.tanggalHadir
-      ? [
-        {
-          label: 'Tanggal Hadir',
-          value: formatTanggalKegiatan(participant.tanggalHadir),
-        },
-      ]
-      : []),
   ]
 
   async function handlePhotoFile(file) {
@@ -118,20 +229,62 @@ export default function Review() {
     }
   }
 
-  function handleConfirm() {
-    if (readOnly || alreadyCheckedIn || submitting || doneMsg) return
-
-    if (!photoPreview) {
-      setPhotoError('Ambil atau upload foto kehadiran terlebih dahulu.')
+  async function handleConfirm() {
+    if (
+      readOnly ||
+      alreadyCheckedIn ||
+      submitting
+    ) {
       return
     }
 
-    setSubmitting(true)
-    recordCheckIn(group.id, participant.id, { foto: photoPreview })
-    setDoneMsg(`${participant.nama} berhasil dicatat hadir.`)
-    setSubmitting(false)
+    if (!photoPreview) {
+      setPhotoError(
+        'Ambil atau upload foto kehadiran terlebih dahulu.',
+      )
+      return
+    }
 
-    setTimeout(() => navigate('/landing'), 1400)
+    setPhotoError('')
+    setSaveError('')
+    setSubmitting(true)
+
+    try {
+      const result = await recordCheckIn(
+        group.id,
+        participant.id,
+        {
+          foto: photoPreview,
+          checkInToken: scan?.checkInToken,
+        },
+      )
+
+      if (!result?.ok) {
+        setSaveError(
+          result?.message ||
+          'Kehadiran gagal disimpan. Silakan coba lagi.',
+        )
+        return
+      }
+
+      navigate('/scanner', {
+        replace: true,
+        state: {
+          success: `${participant.nama} berhasil dicatat hadir.`,
+        },
+      })
+    } catch (error) {
+      console.error(
+        '[DIHATIMU] Proses simpan kehadiran gagal:',
+        error,
+      )
+
+      setSaveError(
+        'Kehadiran gagal disimpan. Periksa koneksi internet, lalu coba lagi.',
+      )
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const displayPhoto = photoPreview || participant.foto
@@ -187,7 +340,11 @@ export default function Review() {
               <div className="flex flex-col gap-2 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => cameraInputRef.current?.click()}
+                  onClick={() => {
+                    setPhotoError('')
+                    setSaveError('')
+                    setShowCamera(true)
+                  }}
                   className="flex-1 rounded-xl bg-dihatimu py-3 text-sm font-semibold text-white"
                 >
                   Ambil Foto
@@ -200,18 +357,7 @@ export default function Review() {
                   Upload Galeri
                 </button>
               </div>
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) handlePhotoFile(file)
-                  e.target.value = ''
-                }}
-              />
+
               <input
                 ref={galleryInputRef}
                 type="file"
@@ -253,24 +399,27 @@ export default function Review() {
           </dl>
         </motion.div>
 
-        {doneMsg && (
-          <p className="mt-4 rounded-xl bg-emerald-50 px-4 py-3 text-center text-sm font-medium text-emerald-800">
-            {doneMsg}
+        {saveError && (
+          <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-700">
+            {saveError}
           </p>
         )}
 
-        <div className="mt-6 flex flex-col gap-3">
+<div className="mt-6 flex flex-col gap-3">
           {!readOnly && (
             <motion.button
               type="button"
               whileTap={{ scale: 0.98 }}
               onClick={handleConfirm}
-              disabled={submitting || !!doneMsg}
+              disabled={submitting}
               className="w-full rounded-2xl bg-dihatimu py-4 font-semibold text-white shadow-md disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {submitting ? 'Menyimpan...' : 'Simpan Kehadiran'}
+              {submitting
+                ? 'Menyimpan...'
+                : 'Simpan Kehadiran'}
             </motion.button>
           )}
+
           <button
             type="button"
             onClick={() => navigate(returnTo)}
@@ -280,6 +429,20 @@ export default function Review() {
           </button>
         </div>
       </main>
+
+      {showCamera && (
+        <AttendanceCameraModal
+          participantName={participant.nama}
+          onCapture={(photoDataUrl) => {
+            setPhotoPreview(photoDataUrl)
+            setPhotoError('')
+            setSaveError('')
+          }}
+          onClose={() =>
+            setShowCamera(false)
+          }
+        />
+      )}
     </div>
   )
 }

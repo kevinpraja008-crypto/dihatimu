@@ -1,4 +1,8 @@
-import { useCallback, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import QrCameraScanner from '../components/QrCameraScanner'
 import ScannerErrorBoundary from '../components/ScannerErrorBoundary'
@@ -28,10 +32,36 @@ export default function Scanner() {
   const [cameraStatus, setCameraStatus] = useState('Meminta izin kamera...')
   const [scanError, setScanError] = useState(location.state?.error || '')
   const [scanNotice, setScanNotice] = useState('')
+  const [scanSuccess, setScanSuccess] = useState(
+    location.state?.success || '',
+  )
+  useEffect(() => {
+    if (!location.state?.success) return
+
+    navigate(location.pathname, {
+      replace: true,
+      state: null,
+    })
+  }, [
+    location.pathname,
+    location.state?.success,
+    navigate,
+  ])
+
+  useEffect(() => {
+    if (!scanSuccess) return undefined
+
+    const timer = setTimeout(() => {
+      setScanSuccess('')
+    }, 2000)
+
+    return () => clearTimeout(timer)
+  }, [scanSuccess])
 
   const restartScanner = useCallback(() => {
     setScanError('')
     setScanNotice('')
+    setScanSuccess('')
     setCameraActive(true)
     setCameraStatus('Memuat kamera...')
     setScannerKey((k) => k + 1)
@@ -40,6 +70,7 @@ export default function Scanner() {
   const handleDecode = useCallback(
     async (decodedText) => {
       console.log('QR TERBACA RAW:', decodedText)
+      setScanSuccess('')
 
       setCameraActive(false)
       setCameraStatus('QR terbaca, mengambil data terbaru...')
@@ -58,8 +89,35 @@ export default function Scanner() {
 
         vibrateScan()
 
+        let checkInSession = null
+
+        if (!result.alreadyHadir) {
+          setCameraStatus(
+            'QR terbaca, mencatat waktu server...',
+          )
+
+          const sessionResult =
+            await store.beginParticipantCheckIn(
+              result.group.id,
+              result.participant.id,
+            )
+
+          if (!sessionResult?.ok) {
+            setScanError(
+              sessionResult?.message ||
+              'Sesi scan gagal dibuat. Silakan scan ulang.',
+            )
+            setTimeout(restartScanner, 2500)
+            return
+          }
+
+          checkInSession = sessionResult.data
+        }
+
         if (result.alreadyHadir) {
-          setScanNotice('Peserta sudah tercatat hadir.')
+          setScanNotice(
+            'Peserta sudah tercatat hadir.',
+          )
         }
 
         setTimeout(() => {
@@ -68,6 +126,7 @@ export default function Scanner() {
               group: result.group,
               participant: result.participant,
               source: result.source,
+              checkInSession,
             }),
           })
         }, result.alreadyHadir ? 600 : 0)
@@ -164,8 +223,13 @@ export default function Scanner() {
 
         {cameraActive && !scanError && <ScannerFrame scanning status={cameraStatus} />}
 
-        {(scanError || scanNotice) && (
+        {(scanError || scanNotice || scanSuccess) && (
           <div className="absolute bottom-28 left-4 right-4 z-20 space-y-2">
+            {scanSuccess && (
+              <p className="rounded-xl border border-emerald-300/30 bg-emerald-600/95 px-4 py-3 text-center text-sm font-semibold text-white shadow-lg backdrop-blur-sm">
+                {scanSuccess}
+              </p>
+            )}
             {scanNotice && (
               <p className="rounded-xl bg-amber-500/90 px-4 py-3 text-center text-sm font-semibold text-white shadow-lg">
                 {scanNotice}

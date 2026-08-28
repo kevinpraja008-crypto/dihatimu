@@ -461,7 +461,7 @@ export default function Dashboard() {
 
               <div className="text-right">
                 <p className="text-xs font-semibold text-[#166534]">
-                  {act.time} WIB
+                  {act.time}
                 </p>
                 <p className="text-[11px] text-[#64748B]">
                   Telah Hadir
