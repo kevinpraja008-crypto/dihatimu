@@ -1,7 +1,15 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+} from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
 import { MasterDataProvider } from './context/MasterDataContext'
+import ProtectedRoute from './components/ProtectedRoute'
 import Splash from './pages/Splash'
 import Landing from './pages/Landing'
+import Login from './pages/Login'
 import Scanner from './pages/Scanner'
 import Review from './pages/Review'
 import Dashboard from './pages/Dashboard'
@@ -14,23 +22,106 @@ import Pengaturan from './pages/Pengaturan'
 
 export default function App() {
   return (
-    <MasterDataProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Splash />} />
-          <Route path="/landing" element={<Landing />} />
-          <Route path="/scanner" element={<Scanner />} />
-          <Route path="/review" element={<Review />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/master-group" element={<MasterGroup />} />
-          <Route path="/group/:groupId" element={<GroupDetail />} />
-          <Route path="/monitor/group/:groupId" element={<GroupMonitor />} />
-          <Route path="/live" element={<LiveMonitor />} />
-          <Route path="/laporan" element={<Laporan />} />
-          <Route path="/pengaturan" element={<Pengaturan />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </MasterDataProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <MasterDataProvider>
+          <Routes>
+            <Route
+              path="/"
+              element={<Splash />}
+            />
+
+            <Route
+              path="/landing"
+              element={<Landing />}
+            />
+
+            <Route
+              path="/login"
+              element={<Login />}
+            />
+
+            <Route
+              path="/scanner"
+              element={<Scanner />}
+            />
+
+            <Route
+              path="/review"
+              element={<Review />}
+            />
+
+            <Route
+              path="/monitor/group/:groupId"
+              element={<GroupMonitor />}
+            />
+
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/master-group"
+              element={
+                <ProtectedRoute>
+                  <MasterGroup />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/group/:groupId"
+              element={
+                <ProtectedRoute>
+                  <GroupDetail />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/live"
+              element={
+                <ProtectedRoute>
+                  <LiveMonitor />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/laporan"
+              element={
+                <ProtectedRoute>
+                  <Laporan />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/pengaturan"
+              element={
+                <ProtectedRoute>
+                  <Pengaturan />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="*"
+              element={
+                <Navigate
+                  to="/"
+                  replace
+                />
+              }
+            />
+          </Routes>
+        </MasterDataProvider>
+      </AuthProvider>
+    </BrowserRouter>
   )
 }
