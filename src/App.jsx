@@ -49,21 +49,21 @@ export default function App() {
           />
 
           <Route
+            path="/scanner"
+            element={<Scanner />}
+          />
+
+          <Route
+            path="/review"
+            element={<Review />}
+          />
+
+          <Route
             path="/monitor/public/:monitorToken"
             element={<GroupMonitor />}
           />
 
           <Route element={<MasterDataScope />}>
-            <Route
-              path="/scanner"
-              element={<Scanner />}
-            />
-
-            <Route
-              path="/review"
-              element={<Review />}
-            />
-
             <Route
               path="/dashboard"
               element={
