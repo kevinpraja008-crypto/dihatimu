@@ -123,7 +123,6 @@ async function loadFromSupabase() {
   notify()
 }
 
-loadFromSupabase()
 
 export function refreshMasterGroups() {
   return loadFromSupabase()

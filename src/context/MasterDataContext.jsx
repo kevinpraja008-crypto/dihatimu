@@ -7,7 +7,15 @@ const MasterDataContext = createContext(null)
 export function MasterDataProvider({ children }) {
   const [, setTick] = useState(0)
 
-  useEffect(() => store.subscribe(() => setTick((n) => n + 1)), [])
+  useEffect(() => {
+    const unsubscribe = store.subscribe(() => {
+      setTick((n) => n + 1)
+    })
+
+    void store.refreshMasterGroups()
+
+    return unsubscribe
+  }, [])
 
   useEffect(() => {
     const channel = supabase

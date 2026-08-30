@@ -1,8 +1,8 @@
 import {
   BrowserRouter,
-  Navigate,
-  Route,
   Routes,
+  Route,
+  Outlet,
 } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { MasterDataProvider } from './context/MasterDataContext'
@@ -20,27 +20,40 @@ import LiveMonitor from './pages/LiveMonitor'
 import Laporan from './pages/Laporan'
 import Pengaturan from './pages/Pengaturan'
 
+function MasterDataScope() {
+  return (
+    <MasterDataProvider>
+      <Outlet />
+    </MasterDataProvider>
+  )
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <MasterDataProvider>
-          <Routes>
-            <Route
-              path="/"
-              element={<Splash />}
-            />
+        <Routes>
+          <Route
+            path="/"
+            element={<Splash />}
+          />
 
-            <Route
-              path="/landing"
-              element={<Landing />}
-            />
+          <Route
+            path="/landing"
+            element={<Landing />}
+          />
 
-            <Route
-              path="/login"
-              element={<Login />}
-            />
+          <Route
+            path="/login"
+            element={<Login />}
+          />
 
+          <Route
+            path="/monitor/public/:monitorToken"
+            element={<GroupMonitor />}
+          />
+
+          <Route element={<MasterDataScope />}>
             <Route
               path="/scanner"
               element={<Scanner />}
@@ -49,11 +62,6 @@ export default function App() {
             <Route
               path="/review"
               element={<Review />}
-            />
-
-            <Route
-              path="/monitor/group/:groupId"
-              element={<GroupMonitor />}
             />
 
             <Route
@@ -109,18 +117,18 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+          </Route>
 
-            <Route
-              path="*"
-              element={
-                <Navigate
-                  to="/"
-                  replace
-                />
-              }
-            />
-          </Routes>
-        </MasterDataProvider>
+          <Route
+            path="*"
+            element={
+              <div
+                className="min-h-screen bg-white"
+                aria-hidden="true"
+              />
+            }
+          />
+        </Routes>
       </AuthProvider>
     </BrowserRouter>
   )

@@ -50,11 +50,19 @@ function drawContainedImage(ctx, img, x, y, maxW, maxH) {
   ctx.drawImage(img, x + (maxW - w) / 2, y + (maxH - h) / 2, w, h)
 }
 
-export function buildMonitorUrl(groupId) {
-  if (typeof window !== 'undefined') {
-    return `${window.location.origin}/monitor/group/${groupId}`
+export function buildMonitorUrl(monitorToken) {
+  if (!monitorToken) {
+    return ''
   }
-  return `/monitor/group/${groupId}`
+
+  const monitorPath =
+    `/monitor/public/${encodeURIComponent(monitorToken)}`
+
+  if (typeof window !== 'undefined') {
+    return `${window.location.origin}${monitorPath}`
+  }
+
+  return monitorPath
 }
 
 export function buildQrFilename(nama) {
