@@ -48,6 +48,25 @@ export async function downloadGroupPdf(group) {
     loadImage(logoDihatimu),
   ])
 
+  const participantPhotos =
+    await Promise.all(
+      (group.participants || []).map(
+        async (participant) => {
+          if (!participant.foto) {
+            return null
+          }
+
+          try {
+            return await loadImage(
+              participant.foto,
+            )
+          } catch {
+            return null
+          }
+        },
+      ),
+    )
+
   const doc = new jsPDF({ unit: 'mm', format: 'a4' })
   const pageW = doc.internal.pageSize.getWidth()
   const pageH = doc.internal.pageSize.getHeight()
@@ -110,22 +129,45 @@ export async function downloadGroupPdf(group) {
     doc.text(`${i + 1}. ${p.nama}`, margin, y)
     y += 6
 
-    if (p.foto) {
-      try {
-        doc.addImage(p.foto, 'JPEG', margin, y, 26, 26)
-      } catch {
-        doc.setFont('helvetica', 'italic')
-        doc.setFontSize(8)
-        doc.text('[Foto tidak tersedia]', margin, y + 4)
-      }
+    const participantPhoto =
+      participantPhotos[i]
+
+    if (participantPhoto) {
+      doc.addImage(
+        participantPhoto,
+        'PNG',
+        margin,
+        y,
+        26,
+        26,
+      )
     } else {
       doc.setDrawColor(230, 234, 237)
       doc.setFillColor(245, 247, 249)
-      doc.roundedRect(margin, y, 26, 26, 13, 13, 'FD')
-      doc.setFont('helvetica', 'italic')
+      doc.roundedRect(
+        margin,
+        y,
+        26,
+        26,
+        13,
+        13,
+        'FD',
+      )
+      doc.setFont(
+        'helvetica',
+        'italic',
+      )
       doc.setFontSize(7)
-      doc.setTextColor(150, 150, 150)
-      doc.text('No foto', margin + 5, y + 16)
+      doc.setTextColor(
+        150,
+        150,
+        150,
+      )
+      doc.text(
+        'No foto',
+        margin + 5,
+        y + 16,
+      )
     }
 
     const textX = margin + 32

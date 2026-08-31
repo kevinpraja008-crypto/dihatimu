@@ -1,4 +1,8 @@
 import { supabase } from '../lib/supabase'
+import {
+  removePendingAttendancePhoto,
+  uploadPendingAttendancePhoto,
+} from './attendancePhotoService'
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -136,6 +140,9 @@ function normalizeRecordResult(value) {
       normalizeTimestamp(
         value.checkInAt,
       ),
+    photoPath:
+      normalizeText(value.photoPath)
+      || null,
   }
 }
 
@@ -150,9 +157,23 @@ function getErrorMessage(
 
   return message || fallback
 }
+async function cleanupPendingPhoto(
+  photoPath,
+) {
+  try {
+    await removePendingAttendancePhoto(
+      photoPath,
+    )
+  } catch (error) {
+    console.warn(
+      '[DIHATIMU] Foto sementara gagal dibersihkan:',
+      error,
+    )
+  }
+}
 
 export async function
-beginPublicParticipantCheckIn(qrId) {
+  beginPublicParticipantCheckIn(qrId) {
   const normalizedQrId =
     normalizeText(qrId)
       .trim()
@@ -195,16 +216,17 @@ beginPublicParticipantCheckIn(qrId) {
 }
 
 export async function
-recordPublicParticipantCheckIn({
-  checkInToken,
-  foto,
-  deviceInfo = null,
-}) {
-  if (
-    !UUID_PATTERN.test(
-      normalizeText(checkInToken),
-    )
-  ) {
+  recordPublicParticipantCheckIn({
+    checkInToken,
+    foto,
+    deviceInfo = null,
+  }) {
+  const normalizedToken =
+    normalizeText(checkInToken)
+      .trim()
+      .toLowerCase()
+
+  if (!UUID_PATTERN.test(normalizedToken)) {
     throw new Error(
       'Sesi scan tidak valid. Silakan scan ulang QR peserta.',
     )
@@ -218,14 +240,19 @@ recordPublicParticipantCheckIn({
       'Foto kehadiran wajib disertakan.',
     )
   }
-
+  const photoPath =
+    await uploadPendingAttendancePhoto({
+      checkInToken: normalizedToken,
+      photoDataUrl: foto,
+    })
   const client = requireSupabase()
 
   const { data, error } = await client.rpc(
     'record_public_participant_check_in',
     {
-      p_check_in_token: checkInToken,
-      p_foto: foto,
+      p_check_in_token:
+        normalizedToken,
+      p_foto: photoPath,
       p_device_info:
         normalizeText(deviceInfo)
           .slice(0, 500)
@@ -234,6 +261,10 @@ recordPublicParticipantCheckIn({
   )
 
   if (error) {
+    await cleanupPendingPhoto(
+      photoPath,
+    )
+
     throw new Error(
       getErrorMessage(
         error,

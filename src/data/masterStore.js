@@ -1,7 +1,10 @@
 import { supabase } from '../lib/supabase'
+import {
+  createAttendancePhotoSignedUrlMap,
+  isStoredAttendancePhoto,
+} from './attendancePhotoService'
 import { initialMasterGroups, toTitleCase } from './dummy'
 
-const STORAGE_KEY = 'dihatimu-master-groups'
 const listeners = new Set()
 
 let masterGroups = []
@@ -38,18 +41,40 @@ function dbGroupToApp(row, participants = []) {
   })
 }
 
-function dbParticipantToApp(row) {
+function dbParticipantToApp(
+  row,
+  signedPhotoUrls = new Map(),
+) {
+  const storedPhotoPath =
+    isStoredAttendancePhoto(row.foto)
+      ? row.foto
+      : null
+
+  const displayPhoto =
+    storedPhotoPath
+      ? signedPhotoUrls.get(
+        storedPhotoPath,
+      ) || null
+      : row.foto
+
   return {
     id: row.id,
     nama: row.nama,
     jabatan: row.jabatan,
     role: row.role || 'TAMU',
     qrId: row.qr_id,
-    kehadiran: row.kehadiran || 'BELUM HADIR',
-    foto: row.foto,
+    kehadiran:
+      row.kehadiran
+      || 'BELUM HADIR',
+    foto: displayPhoto,
+    fotoPath: storedPhotoPath,
     jamHadir: row.jam_hadir,
-    tanggalHadir: row.tanggal_hadir,
-    checkInAt: row.check_in_at ? Date.parse(row.check_in_at) : null,
+    tanggalHadir:
+      row.tanggal_hadir,
+    checkInAt:
+      row.check_in_at
+        ? Date.parse(row.check_in_at)
+        : null,
   }
 }
 
@@ -76,7 +101,12 @@ function participantToDb(groupId, participant) {
     role: participant.role || 'TAMU',
     qr_id: participant.qrId,
     kehadiran: participant.kehadiran || 'BELUM HADIR',
-    foto: participant.foto || null,
+    foto:
+      isStoredAttendancePhoto(
+        participant.fotoPath,
+      )
+        ? participant.fotoPath
+        : participant.foto || null,
     jam_hadir: participant.jamHadir || null,
     tanggal_hadir: participant.tanggalHadir || null,
     check_in_at: participant.checkInAt
@@ -106,19 +136,36 @@ async function loadFromSupabase() {
     console.error('[DIHATIMU] Gagal load participants:', participantError)
   }
 
+  let signedPhotoUrls = new Map()
+
+  try {
+    signedPhotoUrls =
+      await createAttendancePhotoSignedUrlMap(
+        (participants || []).map(
+          (participant) =>
+            participant.foto,
+        ),
+      )
+  } catch (error) {
+    console.error(
+      '[DIHATIMU] Gagal membuat URL foto privat:',
+      error,
+    )
+  }
+
   masterGroups = (groups || []).map((group) => {
     const groupParticipants = (participants || [])
       .filter((p) => p.master_group_id === group.id)
-      .map(dbParticipantToApp)
+      .map((participant) =>
+        dbParticipantToApp(
+          participant,
+          signedPhotoUrls,
+        ),
+      )
 
     return dbGroupToApp(group, groupParticipants)
   })
 
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(masterGroups))
-  } catch {
-    /* ignore */
-  }
 
   notify()
 }
@@ -345,8 +392,16 @@ export async function updateParticipant(
     payload.kehadiran = updates.kehadiran
   }
 
-  if (updates.foto !== undefined) {
-    payload.foto = updates.foto
+  if (
+    updates.fotoPath !== undefined
+    || updates.foto !== undefined
+  ) {
+    payload.foto =
+      isStoredAttendancePhoto(
+        updates.fotoPath,
+      )
+        ? updates.fotoPath
+        : updates.foto || null
   }
 
   if (updates.jamHadir !== undefined) {
