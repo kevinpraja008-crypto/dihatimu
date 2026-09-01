@@ -30,11 +30,6 @@ export function MasterDataProvider({ children }) {
         { event: '*', schema: 'public', table: 'participants' },
         () => store.refreshMasterGroups(),
       )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'attendance_logs' },
-        () => store.refreshMasterGroups(),
-      )
       .subscribe()
 
     return () => {
@@ -67,11 +62,6 @@ export function MasterDataProvider({ children }) {
     [],
   )
 
-  const recordCheckIn = useCallback(
-    (groupId, participantId, payload) =>
-      store.recordCheckIn(groupId, participantId, payload),
-    [],
-  )
 
   const setMasterGroups = useCallback((groups) => store.setMasterGroups(groups), [])
 
@@ -87,7 +77,6 @@ export function MasterDataProvider({ children }) {
       addParticipant,
       updateParticipant,
       deleteParticipant,
-      recordCheckIn,
       setMasterGroups,
     }),
     [
@@ -101,7 +90,6 @@ export function MasterDataProvider({ children }) {
       addParticipant,
       updateParticipant,
       deleteParticipant,
-      recordCheckIn,
       setMasterGroups,
     ],
   )
