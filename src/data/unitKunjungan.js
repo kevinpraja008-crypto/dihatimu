@@ -60,7 +60,7 @@ export const akdOptions = [
       shortLabel: 'GABUNGAN AKD',
     },
   ]
-  
+
   export const bagianOptions = [
     {
       value: 'BAGIAN UMUM',
@@ -88,30 +88,30 @@ export const akdOptions = [
       shortLabel: 'GABUNGAN BAGIAN',
     },
   ]
-  
+
   export function getUnitOptions(instansi) {
     if (instansi === 'DPRD') return akdOptions
     if (instansi === 'SEKRETARIAT') return bagianOptions
-  
+
     return []
   }
-  
+
   export function getUnitLabel(instansi, value) {
     if (!value) return ''
-  
+
     const option = getUnitOptions(instansi).find(
       (item) => item.value === value,
     )
-  
+
     return option?.label || value
   }
-  
+
   export function getUnitShortLabel(instansi, value) {
     if (!value) return ''
-  
+
     const option = getUnitOptions(instansi).find(
       (item) => item.value === value,
     )
-  
+
     return option?.shortLabel || value
   }
